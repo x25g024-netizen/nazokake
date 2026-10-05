@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>なぞかけ</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- ==============================
+     メイン
+     ============================== -->
+
+<div id="view-main" class="app-container active">
+
+    <div class="player-list-item no-border">
+
+        <div class="player-icon"></div>
+
+        <div id="main-username"
+             class="player-name">
+            プレイヤー名
+        </div>
+
+    </div>
+
+    <div class="main-menu-buttons">
+
+        <button class="btn-oval"
+                type="button"
+                onclick="startSoloGame()">
+            ひとりで
+        </button>
+
+        <button class="btn-oval"
+                type="button"
+                onclick="navigateTo('view-friend-menu')">
+            フレンド
+        </button>
+
+    </div>
+
+    <div class="bottom-button">
+
+        <button class="btn-rect username-change-button"
+                type="button"
+                onclick="openUsernameScreen()">
+            ユーザー名変更
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ==============================
+     ユーザー名変更
+     ============================== -->
+
+<div id="view-username"
+     class="app-container">
+
+    <div class="top-header">
+
+        <button class="btn-circle"
+                type="button"
+                onclick="navigateTo('view-main')">
+            もどる
+        </button>
+
+    </div>
+
+    <div class="username-area">
+
+        <div class="page-title">
+            ユーザー名変更
+        </div>
+
+        <input id="username-input"
+               type="text"
+               class="input-field"
+               maxlength="20"
+               placeholder="新しいユーザー名を入力">
+
+        <div class="character-count">
+            最大20文字
+        </div>
+
+        <button class="btn-oval dark-button"
+                type="button"
+                onclick="changeUsername()">
+            保存する
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ==============================
+     ひとり
+     ============================== -->
+
+<div id="view-solo-play"
+     class="app-container">
+
+    <div class="player-list-item no-border">
+
+        <button class="btn-circle back-circle"
+                type="button"
+                onclick="navigateTo('view-main')">
+            もどる
+        </button>
+
+        <div id="solo-username"
+             class="player-name player-name-right">
+            プレイヤー名
+        </div>
+
+    </div>
+
+    <div id="solo-topic-display"
+         class="card-display topic-card">
+    </div>
+
+    <div class="answer-area">
+
+        <div class="nazokake-question">
+
+            <div id="solo-kake-text"
+                 class="kake-text">
+                「お題」とかけて、
+            </div>
+
+            <div class="kake-input-wrapper">
+
+                <span class="bracket">「</span>
+
+                <input id="solo-totoku-input"
+                       type="text"
+                       class="input-field nazokake-input"
+                       maxlength="30"
+                       placeholder="ととく内容を入力">
+
+                <span class="bracket">」</span>
+
+            </div>
+
+            <div class="totoku-text">
+                ととく。
+            </div>
+
+            <div class="kokoro-title">
+                その心は？
+            </div>
+
+            <input id="solo-kokoro-input"
+                   type="text"
+                   class="input-field nazokake-input"
+                   maxlength="50"
+                   placeholder="その心は？">
+
+        </div>
+
+        <div class="submit-button-area">
+
+            <button class="btn-circle"
+                    type="button"
+                    onclick="submitSoloAnswer()">
+                決定
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ==============================
+     ローディング
+     ============================== -->
+
+<div id="view-loading"
+     class="app-container">
+
+    <div class="loading-area">
+
+        <div class="card-display loading-card">
+
+            AI採点中...
+
+            <span class="loading-subtext">
+                座布団を数えています
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ==============================
+     ソロ結果
+     ============================== -->
+
+<div id="view-result"
+     class="app-container">
+
+    <div class="result-score-area">
+
+        <span class="result-label">
+            AIの評価スコア
+        </span>
+
+        <div id="display-score"
+             class="result-score">
+            85点
+        </div>
+
+    </div>
+
+    <div class="result-content">
+
+        <div class="result-section-title">
+            お題
+        </div>
+
+        <p id="display-your-topic"
+           class="result-topic">
+        </p>
+
+        <div class="result-section-title answer-title">
+            あなたのなぞかけ
+        </div>
+
+        <div class="result-nazokake">
+
+            <p id="display-your-kake"
+               class="result-answer">
+            </p>
+
+            <p id="display-your-totoku"
+               class="result-answer">
+            </p>
+
+            <p id="display-your-kokoro"
+               class="result-answer">
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="result-buttons">
+
+        <button class="btn-oval full-width"
+                type="button"
+                onclick="startSoloAgain()">
+            もう一度遊ぶ
+        </button>
+
+        <button class="btn-rect full-width"
+                type="button"
+                onclick="navigateTo('view-main')">
+            トップに戻る
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ==============================
+     フレンドメニュー
+     ============================== -->
+
+<div id="view-friend-menu"
+     class="app-container">
+
+    <div class="player-list-item no-border">
+
+        <button class="btn-circle back-circle"
+                type="button"
+                onclick="navigateTo('view-main')">
+            もどる
+        </button>
+
+    </div>
+
+    <div class="friend-menu-content">
+
+        <button class="btn-oval friend-main-button"
+                type="button"
+                onclick="createRoom()">
+            新しく部屋を作る
+        </button>
+
+        <div class="or-text">
+            または
+        </div>
+
+        <div class="room-join-area">
+
+            <input id="room-number-input"
+                   type="text"
+                   class="input-field room-input"
+                   maxlength="6"
+                   inputmode="numeric"
+                   placeholder="6桁の部屋番号を入力">
+
+            <button class="btn-oval friend-main-button"
+                    type="button"
+                    onclick="joinRoom()">
+                部屋に入る
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ==============================
+     待合室
+     ============================== -->
+
+<div id="view-waiting-room"
+     class="app-container">
+
+    <div class="player-list-item no-border">
+
+        <button class="btn-circle back-circle"
+                type="button"
+                onclick="leaveRoom()">
+            退出
+        </button>
+
+    </div>
+
+    <div class="room-number-area">
+
+        <div class="room-number-label">
+            ROOM NUMBER
+        </div>
+
+        <div id="waiting-room-number"
+             class="room-number">
+            ------
+        </div>
+
+        <button class="copy-room-button"
+                type="button"
+                onclick="copyRoomNumber()">
+            部屋番号をコピー
+        </button>
+
+    </div>
+
+    <div id="waiting-topic"
+         class="card-display topic-card">
+        お題：待機中
+    </div>
+
+    <div id="participant-title"
+         class="participant-title">
+        参加中のプレイヤー
+    </div>
+
+    <div id="participant-list"
+         class="participant-list">
+    </div>
+
+    <div class="waiting-start-area">
+
+        <button id="start-friend-button"
+                class="btn-oval friend-start-button"
+                type="button"
+                onclick="startFriendMatch()">
+            ゲームスタート
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ==============================
+     カウントダウン
+     ============================== -->
+
+<div id="view-friend-round-start"
+     class="app-container">
+
+    <div class="round-start-content">
+
+        <div class="round-start-label">
+            まもなくスタート！
+        </div>
+
+        <div id="friend-countdown-timer"
+             class="countdown-number">
+            3
+        </div>
+
+        <div class="topic-small-label">
+            今ラウンドのお題
+        </div>
+
+        <div id="friend-topic-display"
+             class="card-display topic-card">
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ==============================
+     フレンド入力
+     ============================== -->
+
+<div id="view-friend-input"
+     class="app-container">
+
+    <div class="player-list-item no-border room-header">
+
+        <div>
+
+            <span class="room-header-label">
+                ROOM NUMBER
+            </span>
+
+            <span id="input-room-number"
+                  class="room-header-number">
+                ------
+            </span>
+
+        </div>
+
+        <button class="btn-circle exit-button"
+                type="button"
+                onclick="leaveRoom()">
+            退出
+        </button>
+
+    </div>
+
+    <div id="input-participant-title"
+         class="participant-title">
+        参加中のプレイヤー
+    </div>
+
+    <div id="input-participant-list"
+         class="participant-list">
+    </div>
+
+    <div class="friend-game-header">
+
+        <div class="friend-game-title">
+            フレンド対戦中
+        </div>
+
+        <div id="friend-input-timer"
+             class="friend-timer">
+            残り 60秒
+        </div>
+
+    </div>
+
+    <div id="friend-topic-display-input-view"
+         class="card-display friend-topic-card">
+    </div>
+
+    <div id="friend-input-area"
+         class="friend-answer-area">
+
+        <div class="nazokake-question">
+
+            <div id="friend-kake-text"
+                 class="kake-text">
+                「お題」とかけて、
+            </div>
+
+            <div class="kake-input-wrapper">
+
+                <span class="bracket">「</span>
+
+                <input id="friend-totoku-input"
+                       type="text"
+                       class="input-field nazokake-input"
+                       maxlength="30"
+                       placeholder="ととく内容を入力">
+
+                <span class="bracket">」</span>
+
+            </div>
+
+            <div class="totoku-text">
+                ととく。
+            </div>
+
+            <div class="kokoro-title">
+                その心は？
+            </div>
+
+            <input id="friend-kokoro-input"
+                   type="text"
+                   class="input-field nazokake-input"
+                   maxlength="50"
+                   placeholder="その心は？">
+
+        </div>
+
+        <div class="submit-button-area">
+
+            <button id="btn-friend-submit"
+                    class="btn-circle"
+                    type="button"
+                    onclick="submitFriendAnswer()">
+                提出
+            </button>
+
+        </div>
+
+    </div>
+
+    <div id="friend-submit-waiting"
+         class="friend-submit-waiting">
+
+        <div class="card-display waiting-card">
+
+            あなたのなぞかけを送信しました！
+
+            <span id="friend-waiting-status">
+                他のプレイヤーの回答を待っています...
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ==============================
+     フレンド結果
+     ============================== -->
+
+<div id="view-friend-result"
+     class="app-container">
+
+    <div class="friend-result-header">
+
+        <span class="result-label">
+            結果発表
+        </span>
+
+        <div class="friend-result-subtitle">
+            みんなのなぞかけとAI採点
+        </div>
+
+    </div>
+
+    <div class="friend-result-topic-area">
+
+        <div class="result-section-title">
+            お題
+        </div>
+
+        <p id="friend-result-topic"
+           class="result-topic">
+        </p>
+
+    </div>
+
+    <div id="friend-answer-list"
+         class="friend-answer-list">
+    </div>
+
+    <div class="friend-result-button-area">
+
+        <button class="btn-oval friend-replay-button"
+                type="button"
+                onclick="startFriendAgain()">
+            もう一度遊ぶ
+        </button>
+
+        <button class="btn-rect friend-home-button"
+                type="button"
+                onclick="leaveRoom()">
+            トップに戻る
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ==========================================
+     画面遷移だけはFirebaseに依存させない
+     ========================================== -->
+
+<script>
+function navigateTo(targetViewId) {
+
+    document
+        .querySelectorAll(".app-container")
+        .forEach(function(view) {
+            view.classList.remove("active");
+        });
+
+    const target =
+        document.getElementById(targetViewId);
+
+    if (target) {
+        target.classList.add("active");
+    } else {
+        console.error(
+            "画面が見つかりません:",
+            targetViewId
+        );
+    }
+}
+</script>
+
+
+<!-- Firebase / ゲーム本体 -->
+<script type="module" src="script.js"></script>
+
+</body>
+</html>

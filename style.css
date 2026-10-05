@@ -1,0 +1,762 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+}
+
+body {
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Helvetica Neue",
+        "Yu Gothic",
+        "Hiragino Kaku Gothic ProN",
+        Arial,
+        sans-serif;
+
+    background: #f4f1eb;
+    color: #222;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:active {
+    transform: scale(.98);
+}
+
+
+/* ==========================
+   共通
+   ========================== */
+
+.app-container {
+    display: none;
+
+    width: 100%;
+    min-height: 100vh;
+
+    padding: 24px;
+}
+
+.app-container.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.player-list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 14px 0;
+
+    border-bottom: 1px solid #ddd;
+}
+
+.no-border {
+    border-bottom: none;
+}
+
+.player-icon {
+    width: 42px;
+    height: 42px;
+
+    flex: 0 0 42px;
+
+    border-radius: 50%;
+
+    background: #d8d3ca;
+}
+
+.player-icon-dark {
+    background: #333;
+}
+
+.player-name {
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.player-name-right {
+    margin-left: auto;
+}
+
+
+/* ==========================
+   ボタン
+   ========================== */
+
+.btn-oval {
+    border: none;
+
+    padding: 16px 28px;
+
+    border-radius: 999px;
+
+    background: #222;
+    color: white;
+
+    font-weight: bold;
+    font-size: 17px;
+
+    transition:
+        opacity .15s,
+        transform .1s;
+}
+
+.btn-oval:hover {
+    opacity: .85;
+}
+
+.btn-rect {
+    border: none;
+
+    padding: 14px 20px;
+
+    background: #ddd;
+    color: #222;
+
+    font-weight: bold;
+
+    transition:
+        opacity .15s,
+        transform .1s;
+}
+
+.btn-circle {
+    width: 70px;
+    min-width: 70px;
+    height: 70px;
+
+    border-radius: 50%;
+
+    border: none;
+
+    background: #222;
+    color: white;
+
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.back-circle {
+    width: 55px;
+    min-width: 55px;
+    height: 55px;
+}
+
+.exit-button {
+    width: 65px;
+    min-width: 65px;
+    height: 50px;
+
+    border-radius: 25px;
+
+    background: #9d2b2b;
+}
+
+.full-width {
+    width: 100%;
+}
+
+
+/* ==========================
+   メイン
+   ========================== */
+
+.main-menu-buttons {
+    display: flex;
+    flex-direction: column;
+
+    gap: 20px;
+
+    margin: auto 0;
+}
+
+.bottom-button {
+    margin-top: auto;
+}
+
+.username-change-button {
+    width: 100%;
+}
+
+
+/* ==========================
+   ユーザー名
+   ========================== */
+
+.top-header {
+    margin-bottom: 30px;
+}
+
+.username-area {
+    width: 100%;
+    max-width: 500px;
+
+    margin: auto;
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: bold;
+
+    margin-bottom: 25px;
+}
+
+.input-field {
+    width: 100%;
+
+    border: 2px solid #ccc;
+    border-radius: 12px;
+
+    padding: 14px;
+
+    background: white;
+
+    outline: none;
+
+    transition: border-color .15s;
+}
+
+.input-field:focus {
+    border-color: #222;
+}
+
+.character-count {
+    color: #777;
+
+    font-size: 13px;
+
+    margin: 8px 0 20px;
+}
+
+.dark-button {
+    width: 100%;
+}
+
+
+/* ==========================
+   カード
+   ========================== */
+
+.card-display {
+    background: white;
+
+    border-radius: 18px;
+
+    padding: 25px;
+
+    text-align: center;
+
+    box-shadow:
+        0 5px 20px rgba(0, 0, 0, .08);
+}
+
+.topic-card {
+    font-size: 28px;
+    font-weight: bold;
+
+    margin: 30px 0;
+}
+
+
+/* ==========================
+   なぞかけ入力
+   ========================== */
+
+.answer-area {
+    width: 100%;
+    max-width: 600px;
+
+    margin: auto;
+}
+
+.nazokake-question {
+    font-size: 18px;
+}
+
+.kake-text {
+    margin-bottom: 12px;
+}
+
+.kake-input-wrapper {
+    display: flex;
+
+    align-items: center;
+
+    gap: 5px;
+}
+
+.nazokake-input {
+    flex: 1;
+
+    min-width: 0;
+}
+
+.bracket {
+    font-size: 24px;
+}
+
+.totoku-text {
+    margin-top: 10px;
+}
+
+.kokoro-title {
+    font-size: 24px;
+    font-weight: bold;
+
+    margin-top: 30px;
+    margin-bottom: 12px;
+}
+
+.submit-button-area {
+    display: flex;
+
+    justify-content: center;
+
+    margin-top: 30px;
+}
+
+
+/* ==========================
+   ローディング
+   ========================== */
+
+.loading-area {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex: 1;
+}
+
+.loading-card {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.loading-subtext {
+    display: block;
+
+    margin-top: 12px;
+
+    color: #777;
+    font-size: 14px;
+}
+
+
+/* ==========================
+   ソロ結果
+   ========================== */
+
+.result-score-area {
+    text-align: center;
+
+    margin: 30px 0;
+}
+
+.result-label {
+    color: #777;
+}
+
+.result-score {
+    font-size: 64px;
+    font-weight: bold;
+}
+
+.result-content {
+    width: 100%;
+    max-width: 700px;
+
+    margin: auto;
+}
+
+.result-section-title {
+    font-weight: bold;
+    color: #777;
+
+    margin-top: 20px;
+}
+
+.result-topic {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.result-answer {
+    margin: 10px 0;
+}
+
+.result-buttons {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+
+    width: 100%;
+    max-width: 600px;
+
+    margin: 30px auto 0;
+}
+
+
+/* ==========================
+   フレンドメニュー
+   ========================== */
+
+.friend-menu-content {
+    width: 100%;
+    max-width: 500px;
+
+    margin: auto;
+}
+
+.friend-main-button {
+    width: 100%;
+}
+
+.or-text {
+    text-align: center;
+
+    margin: 20px 0;
+
+    color: #777;
+}
+
+.room-join-area {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+}
+
+
+/* ==========================
+   待合室
+   ========================== */
+
+.room-number-area {
+    text-align: center;
+
+    margin: 20px 0;
+}
+
+.room-number-label {
+    font-size: 13px;
+
+    letter-spacing: 2px;
+
+    color: #777;
+}
+
+.room-number {
+    font-size: 42px;
+    font-weight: bold;
+
+    letter-spacing: 5px;
+
+    margin: 10px 0;
+}
+
+.copy-room-button {
+    border: none;
+
+    padding: 8px 15px;
+
+    border-radius: 20px;
+
+    background: #ddd;
+}
+
+.waiting-topic {
+    margin: 20px 0;
+}
+
+.participant-title {
+    font-weight: bold;
+
+    margin: 20px 0 8px;
+}
+
+.participant-list {
+    background: white;
+
+    border-radius: 15px;
+
+    padding: 0 15px;
+}
+
+.participant-list .player-list-item:last-child {
+    border-bottom: none;
+}
+
+.player-score {
+    margin-left: auto;
+
+    color: #777;
+
+    font-size: 13px;
+}
+
+.player-score.ready {
+    color: #16833b;
+}
+
+.player-score.connecting {
+    color: #777;
+}
+
+.waiting-start-area {
+    margin-top: auto;
+
+    padding-top: 30px;
+}
+
+.friend-start-button {
+    width: 100%;
+}
+
+
+/* ==========================
+   カウントダウン
+   ========================== */
+
+.round-start-content {
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    flex: 1;
+}
+
+.round-start-label {
+    font-size: 20px;
+}
+
+.countdown-number {
+    font-size: 100px;
+    font-weight: bold;
+
+    margin: 20px 0;
+}
+
+.topic-small-label {
+    color: #777;
+
+    margin-bottom: 10px;
+}
+
+
+/* ==========================
+   フレンドゲーム
+   ========================== */
+
+.room-header {
+    justify-content: space-between;
+}
+
+.room-header-label {
+    display: block;
+
+    font-size: 11px;
+
+    color: #777;
+
+    letter-spacing: 1px;
+}
+
+.room-header-number {
+    font-weight: bold;
+}
+
+.friend-game-header {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 20px;
+}
+
+.friend-game-title {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.friend-timer {
+    font-weight: bold;
+
+    white-space: nowrap;
+}
+
+.friend-topic-card {
+    font-size: 25px;
+    font-weight: bold;
+
+    margin: 20px 0;
+}
+
+.friend-answer-area {
+    width: 100%;
+    max-width: 600px;
+
+    margin: auto;
+}
+
+.friend-submit-waiting {
+    display: none;
+
+    margin-top: 30px;
+}
+
+.waiting-card {
+    font-weight: bold;
+}
+
+.waiting-card span {
+    display: block;
+
+    margin-top: 10px;
+
+    color: #777;
+
+    font-size: 14px;
+}
+
+
+/* ==========================
+   フレンド結果
+   ========================== */
+
+.friend-result-header {
+    text-align: center;
+}
+
+.friend-result-subtitle {
+    color: #777;
+
+    margin-top: 8px;
+}
+
+.friend-result-topic-area {
+    text-align: center;
+
+    margin: 20px 0;
+}
+
+.friend-answer-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 15px;
+
+    width: 100%;
+    max-width: 700px;
+
+    margin: auto;
+}
+
+.friend-answer-card {
+    background: white;
+
+    border-radius: 15px;
+
+    padding: 18px;
+
+    box-shadow:
+        0 4px 15px rgba(0,0,0,.06);
+}
+
+.my-answer-card {
+    border: 3px solid #222;
+}
+
+.answer-card-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    margin-bottom: 12px;
+}
+
+.answer-player-name {
+    font-weight: bold;
+}
+
+.answer-score {
+    font-weight: bold;
+}
+
+.answer-text {
+    margin: 7px 0;
+}
+
+.friend-result-button-area {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+
+    width: 100%;
+    max-width: 700px;
+
+    margin: 25px auto 0;
+}
+
+.friend-replay-button,
+.friend-home-button {
+    width: 100%;
+}
+
+
+/* ==========================
+   スマホ
+   ========================== */
+
+@media (max-width: 600px) {
+
+    .app-container {
+        padding: 18px;
+    }
+
+    .topic-card {
+        font-size: 24px;
+    }
+
+    .room-number {
+        font-size: 34px;
+    }
+
+    .countdown-number {
+        font-size: 80px;
+    }
+
+    .friend-game-header {
+        gap: 10px;
+    }
+
+}
