@@ -49,7 +49,72 @@ const db = getFirestore(app);
 /* =====================================================
    ゲームデータ
    ===================================================== */
+/ ==================================================
+// AI設定（OpenRouter）
+// ==================================================
+// ここに自分のOpenRouter APIキーを入れてください。
+const OPENROUTER_API_KEY = "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";
+const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
+const OPENROUTER_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
 
+async function callOpenRouter(messages){
+    if(!OPENROUTER_API_KEY || OPENROUTER_API_KEY === "APIキーをここに貼り付け"){
+        throw new Error("OpenRouter APIキーが設定されていません。コード上部のOPENROUTER_API_KEYに貼り付けてください。");
+    }
+
+    const response = await fetch(OPENROUTER_ENDPOINT,{
+        method:"POST",
+        headers:{
+            "Authorization":"Bearer " + OPENROUTER_API_KEY,
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+            model:OPENROUTER_MODEL,
+            temperature:0.7,
+            messages:messages
+        })
+    });
+
+    const data = await response.json();
+    if(!response.ok){
+        throw new Error(data?.error?.message || ("APIエラー HTTP " + response.status));
+    }
+
+    const content = data?.choices?.[0]?.message?.content;
+    if(!content){
+        throw new Error("AIから回答が返ってきませんでした。");
+    }
+    return content.trim();
+}
+
+async function generateAITopic(){
+    const text = await callOpenRouter([
+        {role:"system",content:"あなたは日本語のなぞかけのお題を作るAIです。"},
+        {role:"user",content:"日本の専門学校生でも考えやすく、面白いなぞかけのお題を1つだけ作ってください。説明や答えは不要です。30文字以内で、お題の言葉だけを返してください。なぞかけなので○○とかけましての○○部分だけでいいです"}
+    ]);
+    return text.replace(/^「|」$/g,"").trim();
+}
+
+async function scoreWithAI(topic, first, second){
+    const resultText = await callOpenRouter([
+        {role:"system",content:"あなたは日本語のなぞかけを公平に採点するAIです。必ずJSONだけを返してください。形式は {\"score\":数字,\"comment\":\"短い日本語コメント\"} です。scoreは0から100の整数です。"},
+        {role:"user",content:"次のなぞかけを採点してください。\n\nお題："+topic+"\nと説く："+first+"\nその心は："+second+"\n\n評価は、お題との関連性30点、なぞかけとしての成立度30点、発想力20点、面白さ20点を目安にしてください。コメントは2～4文程度で書いてください。"}
+    ]);
+
+    let parsed;
+    try{
+        const jsonMatch=resultText.match(/\{[\s\S]*\}/);
+        parsed=JSON.parse(jsonMatch ? jsonMatch[0] : resultText);
+    }catch(e){
+        const scoreMatch=resultText.match(/\b(100|[1-9]?\d)\b/);
+        parsed={score:scoreMatch?Number(scoreMatch[1]):0,comment:resultText};
+    }
+
+    let score=Number(parsed.score);
+    if(!Number.isFinite(score)) score=0;
+    score=Math.max(0,Math.min(100,Math.round(score)));
+    return {score:score,comment:parsed.comment || "AIからコメントが返ってきませんでした。"};
+}
 const topics = [
     "テスト",
     "学校",
