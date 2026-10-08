@@ -2,255 +2,266 @@
 <html lang="ja">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width,
-      initial-scale=1.0,
-      maximum-scale=1.0,
-      user-scalable=no">
-
-<title>なぞかけアプリ</title>
+    <title>なぞかけ</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<audio id="bgmAudio" loop preload="auto">
-    <source src="audio/bgm.mp3" type="audio/mpeg">
-</audio>
+<div id="view-main" class="app-container active">
 
-<!-- ==================================================
-     ホーム
-================================================== -->
+    <div class="player-list-item no-border">
+        <div class="player-icon"></div>
 
-<section id="home" class="screen active">
-
-<div class="phone">
-
-    <div class="status">
-        <span class="current-time">9:41</span>
-        　　　　　　　　　●● ▪
-    </div>
-
-    <div class="home-top">
-
-        <div id="homeIcon" class="icon-small">
-            アイコン
-        </div>
-
-        <div id="homePlayer" class="player-label">
+        <div id="main-username" class="player-name">
             プレイヤー名
         </div>
-
     </div>
 
-    <div class="home-main">
+    <div class="main-menu-buttons">
 
-        <button
-            class="btn-round home-menu"
-            onclick="startSolo()">
+        <button class="btn-oval"
+                type="button"
+                onclick="startSoloGame()">
             ひとりで
         </button>
 
-        <button
-            class="btn-round home-menu"
-            onclick="show('friend')">
+        <button class="btn-oval"
+                type="button"
+                onclick="navigateTo('view-friend-menu')">
             フレンド
         </button>
 
     </div>
 
-    <button
-        class="btn home-settings"
-        onclick="show('settings')">
-        設定
-    </button>
+    <div class="bottom-button">
+
+        <button class="btn-rect username-change-button"
+                type="button"
+                onclick="openUsernameScreen()">
+            ユーザー名変更
+        </button>
+
+        <button class="btn-rect settings-open-button"
+                type="button"
+                onclick="openSettingsScreen()">
+            設定
+        </button>
+
+    </div>
 
 </div>
 
-</section>
 
+<div id="view-username" class="app-container">
 
-<!-- ==================================================
-     一人用
-================================================== -->
+    <div class="top-header">
 
-<section id="solo" class="screen">
+        <button class="btn-circle"
+                type="button"
+                onclick="navigateTo('view-main')">
+            もどる
+        </button>
 
-<div class="phone">
-
-    <div class="status">
-        <span class="current-time">9:41</span>
-        　　　　　　　　　●● ▪
     </div>
 
-    <div id="soloTimer" class="solo-timer">
-        残り時間：90秒
+    <div class="username-area">
+
+        <div class="page-title">
+            ユーザー名変更
+        </div>
+
+        <input id="username-input"
+               type="text"
+               class="input-field"
+               maxlength="20"
+               placeholder="新しいユーザー名を入力">
+
+        <div class="character-count">
+            最大20文字
+        </div>
+
+        <button class="btn-oval dark-button"
+                type="button"
+                onclick="changeUsername()">
+            保存する
+        </button>
+
     </div>
-
-    <div id="soloQuestion" class="box solo-question">
-        お題
-    </div>
-
-    <div class="solo-label">「○○」とときます</div>
-
-    <input
-        id="soloFirstAnswer"
-        class="answer-input"
-        placeholder="ここに入力">
-
-    <div class="solo-label">その心は？</div>
-
-    <input
-        id="soloSecondAnswer"
-        class="answer-input"
-        placeholder="ここに入力">
-
-    <button
-        class="btn-round ok"
-        onclick="submitSolo()">
-        OK
-    </button>
-
-    <div id="soloAIError" class="ai-error"></div>
 
 </div>
 
-</section>
 
+<div id="view-solo-play" class="app-container">
 
-<!-- ==================================================
-     一人用 AI採点
-================================================== -->
+    <div class="player-list-item no-border">
 
-<section id="soloAI" class="screen">
+        <button class="btn-circle back-circle"
+                type="button"
+                onclick="navigateTo('view-main')">
+            もどる
+        </button>
 
-<div class="phone">
+        <div id="solo-username"
+             class="player-name player-name-right">
+            プレイヤー名
+        </div>
 
-    <div class="status">
-        <span class="current-time">9:41</span>
-        　　　　　　　　　●● ▪
     </div>
 
-    <div class="box ai-box">
+    <div id="solo-topic-display"
+         class="card-display topic-card">
+    </div>
 
-        <div>
-            AI採点中
+    <div class="answer-area">
 
-            <div class="loading">
-                しばらくお待ちください
+        <div class="nazokake-question">
+
+            <div id="solo-kake-text"
+                 class="kake-text">
+                「お題」とかけて、
             </div>
+
+            <div class="kake-input-wrapper">
+
+                <span class="bracket">「</span>
+
+                <input id="solo-totoku-input"
+                       type="text"
+                       class="input-field nazokake-input"
+                       maxlength="30"
+                       placeholder="ととく内容を入力">
+
+                <span class="bracket">」</span>
+
+            </div>
+
+            <div class="totoku-text">
+                ととく。
+            </div>
+
+            <div class="kokoro-title">
+                その心は？
+            </div>
+
+            <input id="solo-kokoro-input"
+                   type="text"
+                   class="input-field nazokake-input"
+                   maxlength="50"
+                   placeholder="その心は？">
+
+        </div>
+
+        <div class="submit-button-area">
+
+            <button class="btn-circle"
+                    type="button"
+                    onclick="submitSoloAnswer()">
+                決定
+            </button>
+
         </div>
 
     </div>
 
 </div>
 
-</section>
 
+<div id="view-loading" class="app-container">
 
-<!-- ==================================================
-     一人用結果
-================================================== -->
+    <div class="loading-area">
 
-<section id="soloResult" class="screen">
+        <div class="card-display loading-card">
 
-<div class="phone">
+            AI採点中...
 
-    <div class="status">
-        <span class="current-time">9:41</span>
-        　　　　　　　　　●● ▪
+            <span class="loading-subtext">
+                座布団を数えています
+            </span>
+
+        </div>
+
     </div>
 
-    <div class="box result-title">
-        採点結果
+</div>
+
+
+<div id="view-result" class="app-container">
+
+    <div class="result-score-area">
+
+        <span class="result-label">
+            AIの評価スコア
+        </span>
+
+        <div id="display-score"
+             class="result-score">
+            85点
+        </div>
+
     </div>
 
-    <div id="soloScore" class="result-score">
-        0点
+    <div class="result-content">
+
+        <div class="result-section-title">
+            お題
+        </div>
+
+        <p id="display-your-topic"
+           class="result-topic">
+        </p>
+
+        <div class="result-section-title answer-title">
+            あなたのなぞかけ
+        </div>
+
+        <div class="result-nazokake">
+
+            <p id="display-your-kake"
+               class="result-answer">
+            </p>
+
+            <p id="display-your-totoku"
+               class="result-answer">
+            </p>
+
+            <p id="display-your-kokoro"
+               class="result-answer">
+            </p>
+
+            <div id="solo-ai-comment"
+                 class="ai-result-comment">
+                AIコメントを取得中...
+            </div>
+
+        </div>
+
     </div>
 
-    <div id="soloResultAnswer" class="box result-answer">
-        お題の返答
-    </div>
+    <div class="result-buttons">
 
-    <div id="soloComment" class="box result-comment">
-        答えに対するコメント
-    </div>
-
-    <div class="result-actions">
-
-        <button
-            class="btn"
-            onclick="show('soloEnd')">
-            もどる
+        <button class="btn-oval full-width"
+                type="button"
+                onclick="startSoloAgain()">
+            もう一度遊ぶ
         </button>
 
-        <button
-            class="btn"
-            onclick="startSolo()">
-            もう一度
+        <button class="btn-rect full-width"
+                type="button"
+                onclick="navigateTo('view-main')">
+            トップに戻る
         </button>
 
     </div>
 
 </div>
 
-</section>
 
-
-<!-- ==================================================
-     一人用終了
-================================================== -->
-
-<section id="soloEnd" class="screen">
-
-<div class="phone">
-
-    <div class="status">
-        <span class="current-time">9:41</span>
-        　　　　　　　　　●● ▪
-    </div>
-
-    <div class="box end-title">
-        ゲーム終了
-    </div>
-
-    <div class="end-text">
-        一人用ゲームを終了しました。<br>
-        お疲れさまでした。
-    </div>
-
-    <div class="end-buttons">
-
-        <button
-            class="btn"
-            onclick="show('home')">
-            ホーム
-        </button>
-
-        <button
-            class="btn"
-            onclick="startSolo()">
-            もう一度
-        </button>
-
-    </div>
-
-</div>
-
-</section>
-
-
-<!-- ==============================
-     フレンドメニュー
-     ============================== -->
-
-<div id="view-friend-menu"
-     class="app-container">
+<div id="view-friend-menu" class="app-container">
 
     <div class="player-list-item no-border">
 
@@ -296,12 +307,7 @@
 </div>
 
 
-<!-- ==============================
-     待合室
-     ============================== -->
-
-<div id="view-waiting-room"
-     class="app-container">
+<div id="view-waiting-room" class="app-container">
 
     <div class="player-list-item no-border">
 
@@ -360,12 +366,7 @@
 </div>
 
 
-<!-- ==============================
-     カウントダウン
-     ============================== -->
-
-<div id="view-friend-round-start"
-     class="app-container">
+<div id="view-friend-round-start" class="app-container">
 
     <div class="round-start-content">
 
@@ -391,12 +392,7 @@
 </div>
 
 
-<!-- ==============================
-     フレンド入力
-     ============================== -->
-
-<div id="view-friend-input"
-     class="app-container">
+<div id="view-friend-input" class="app-container">
 
     <div class="player-list-item no-border room-header">
 
@@ -518,12 +514,7 @@
 </div>
 
 
-<!-- ==============================
-     フレンド結果
-     ============================== -->
-
-<div id="view-friend-result"
-     class="app-container">
+<div id="view-friend-result" class="app-container">
 
     <div class="friend-result-header">
 
@@ -572,261 +563,253 @@
 </div>
 
 
-<!-- ==================================================
-     設定
-================================================== -->
+<!-- 設定 -->
 
-<section id="settings" class="screen">
+<div id="view-settings" class="app-container">
 
-<div class="phone">
+    <div class="top-header">
 
-    <div class="status">
-        <span class="current-time">9:41</span>
-        　　　　　　　　　●● ▪
+        <button class="btn-circle back-circle"
+                type="button"
+                onclick="navigateTo('view-main')">
+            もどる
+        </button>
+
     </div>
 
-    <button
-        class="small-back"
-        onclick="show('home')">
-        もどる
-    </button>
+    <div class="settings-content">
 
-    <div class="settings-main">
-
-        <div class="settings-row">
-
-            <div class="settings-row-title">
-                <span>BGM</span>
-
-                <button
-                    id="bgmToggle"
-                    class="settings-toggle on"
-                    onclick="toggleBGM()">
-                    ON
-                </button>
-            </div>
-
+        <div class="page-title">
+            設定
         </div>
 
-        <div class="settings-row">
+        <div class="settings-section">
 
-            <div class="settings-row-title">
-
-                <span>BGM音量</span>
-
-                <span
-                    id="bgmVolumeValue"
-                    class="settings-value">
-                    70%
-                </span>
-
+            <div class="settings-section-title">
+                プロフィール
             </div>
 
-            <div class="settings-control">
+            <div class="settings-profile-row">
 
-                <input
-                    id="bgmVolume"
-                    class="settings-range"
-                    type="range"
-                    min="0"
-                    max="100"
-                    value="70"
-                    oninput="changeBGMVolume(this.value)">
-
-            </div>
-
-        </div>
-
-        <div class="settings-row">
-
-            <div class="settings-row-title">
-
-                <span>効果音</span>
-
-                <button
-                    id="seToggle"
-                    class="settings-toggle on"
-                    onclick="toggleSE()">
-                    ON
+                <button id="settings-icon-preview"
+                        class="settings-icon-preview"
+                        type="button"
+                        onclick="cycleProfileIcon()">
+                    ●
                 </button>
 
+                <div class="settings-profile-name">
+
+                    <div class="settings-profile-label">
+                        ユーザー名
+                    </div>
+
+                    <div id="settings-username-display"
+                         class="settings-profile-value">
+                        プレイヤー名
+                    </div>
+
+                </div>
+
             </div>
 
-        </div>
+            <button class="btn-rect settings-wide-button"
+                    type="button"
+                    onclick="openUsernameScreen()">
+                ユーザー名を変更
+            </button>
 
-        <div class="settings-row">
+            <div class="settings-icon-title">
+                アイコン
+            </div>
 
-            <div class="settings-row-title">
+            <div id="settings-icon-choices"
+                 class="settings-icon-choices">
 
-                <span>音声</span>
+                <button class="icon-choice"
+                        type="button"
+                        data-icon="●"
+                        onclick="selectProfileIcon('●')">
+                    ●
+                </button>
 
-                <button
-                    id="voiceToggle"
-                    class="settings-toggle on"
-                    onclick="toggleVoice()">
-                    ON
+                <button class="icon-choice"
+                        type="button"
+                        data-icon="★"
+                        onclick="selectProfileIcon('★')">
+                    ★
+                </button>
+
+                <button class="icon-choice"
+                        type="button"
+                        data-icon="◆"
+                        onclick="selectProfileIcon('◆')">
+                    ◆
+                </button>
+
+                <button class="icon-choice"
+                        type="button"
+                        data-icon="猫"
+                        onclick="selectProfileIcon('猫')">
+                    猫
                 </button>
 
             </div>
 
         </div>
 
-        <button
-            class="btn settings-button"
-            onclick="showToast('BGM設定を保存しました')">
-            BGM設定を確認
-        </button>
 
-        <button
-            class="btn settings-button"
-            onclick="show('profile')">
-            プロフィール設定
-        </button>
+        <div class="settings-section">
 
-    </div>
+            <div class="settings-section-title">
+                サウンド
+            </div>
 
-</div>
+            <div class="settings-row">
 
-</section>
+                <div class="settings-row-title">
 
+                    <span>BGM</span>
 
-<!-- ==================================================
-     プロフィール
-================================================== -->
+                    <button id="bgm-toggle"
+                            class="settings-toggle"
+                            type="button"
+                            onclick="toggleBGM()">
+                        OFF
+                    </button>
 
-<section id="profile" class="screen">
+                </div>
 
-<div class="phone">
+                <div class="settings-control">
 
-    <div class="status">
-        <span class="current-time">9:41</span>
-        　　　　　　　　　●● ▪
-    </div>
+                    <input id="bgm-volume"
+                           class="settings-range"
+                           type="range"
+                           min="0"
+                           max="100"
+                           value="50"
+                           oninput="changeBGMVolume(this.value)">
 
-    <button
-        class="small-back"
-        onclick="show('settings')">
-        もどる
-    </button>
+                    <span id="bgm-volume-value"
+                          class="settings-value">
+                        50%
+                    </span>
 
-    <div class="profile-main">
+                </div>
 
-        <div
-            id="profileIcon"
-            class="icon-circle profile-icon">
-            アイコン
-        </div>
-
-        <button
-            class="btn profile-change"
-            onclick="changePlayerName()">
-            プレイヤー名変更
-        </button>
-
-        <button
-            class="btn profile-change"
-            style="margin-top:30px"
-            onclick="show('iconChange')">
-            アイコン変更
-        </button>
-
-    </div>
-
-</div>
-
-</section>
+            </div>
 
 
-<!-- ==================================================
-     アイコン変更
-================================================== -->
+            <div class="settings-row">
 
-<section id="iconChange" class="screen">
+                <div class="settings-row-title">
 
-<div class="phone">
+                    <span>効果音</span>
 
-    <div class="status">
-        <span class="current-time">9:41</span>
-        　　　　　　　　　●● ▪
-    </div>
+                    <button id="se-toggle"
+                            class="settings-toggle on"
+                            type="button"
+                            onclick="toggleSE()">
+                        ON
+                    </button>
 
-    <button
-        class="small-back"
-        onclick="show('profile')">
-        もどる
-    </button>
+                </div>
 
-    <div class="icon-main">
+            </div>
 
-        <div class="icon-grid">
 
-            <button
-                class="icon-choice"
-                onclick="selectIcon(this,'01')">
-                アイコン
-            </button>
+            <div class="settings-row">
 
-            <button
-                class="icon-choice"
-                onclick="selectIcon(this,'02')">
-                アイコン
-            </button>
+                <div class="settings-row-title">
 
-            <button
-                class="icon-choice"
-                onclick="selectIcon(this,'03')">
-                アイコン
-            </button>
+                    <span>音声</span>
 
-            <button
-                class="icon-choice"
-                onclick="selectIcon(this,'04')">
-                アイコン
-            </button>
+                    <button id="voice-toggle"
+                            class="settings-toggle"
+                            type="button"
+                            onclick="toggleVoice()">
+                        OFF
+                    </button>
 
-            <button
-                class="icon-choice"
-                onclick="selectIcon(this,'05')">
-                アイコン
-            </button>
+                </div>
 
-            <button
-                class="icon-choice"
-                onclick="selectIcon(this,'06')">
-                アイコン
-            </button>
-
-            <button
-                class="icon-choice"
-                onclick="selectIcon(this,'07')">
-                アイコン
-            </button>
-
-            <button
-                class="icon-choice"
-                onclick="selectIcon(this,'08')">
-                アイコン
-            </button>
+            </div>
 
         </div>
 
-        <button
-            class="btn icon-save"
-            onclick="saveIcon()">
-            決定
-        </button>
+
+        <div class="settings-section">
+
+            <div class="settings-section-title">
+                AI設定
+            </div>
+
+            <div class="settings-ai-note">
+                AIでお題を生成し、なぞかけを採点します。
+            </div>
+
+            <label class="settings-api-label"
+                   for="ai-api-key">
+                OpenRouter APIキー
+            </label>
+
+            <input id="ai-api-key"
+                   class="input-field settings-api-input"
+                   type="password"
+                   autocomplete="off"
+                   placeholder="APIキーを入力">
+
+            <button class="btn-oval settings-wide-button dark-button"
+                    type="button"
+                    onclick="saveAISettings()">
+                AI設定を保存
+            </button>
+
+            <div class="settings-security-note">
+                ※ブラウザ側にAPIキーを保存する方式です。
+                公開サイトではサーバー側にキーを置く方式を推奨します。
+            </div>
+
+        </div>
 
     </div>
 
 </div>
 
-</section>
+
+<audio id="bgm-audio"
+       loop
+       preload="auto">
+    <source src="audio/bgm.mp3"
+            type="audio/mpeg">
+</audio>
 
 
-<div id="toast" class="toast"></div>
+<div id="app-toast"
+     class="app-toast">
+</div>
+
+
+<script>
+function navigateTo(targetViewId) {
+
+    document
+        .querySelectorAll(".app-container")
+        .forEach(function(view) {
+            view.classList.remove("active");
+        });
+
+    const target =
+        document.getElementById(targetViewId);
+
+    if (target) {
+        target.classList.add("active");
+    }
+}
+</script>
+
 
 <script type="module" src="script.js"></script>
-
 
 </body>
 </html>
