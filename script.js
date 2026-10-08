@@ -1,2530 +1,1326 @@
-// /* =====================================================
-//    Firebase
-//    ===================================================== */
-
-// import {
-//     initializeApp
-// } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-
-// import {
-//     getAuth,
-//     signInAnonymously,
-//     onAuthStateChanged
-// } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-
-// import {
-//     getFirestore,
-//     collection,
-//     doc,
-//     setDoc,
-//     getDoc,
-//     getDocs,
-//     updateDoc,
-//     deleteDoc,
-//     onSnapshot,
-//     serverTimestamp
-// } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-
-
-// /* =====================================================
-//    Firebase設定
-//    ===================================================== */
-
-// const firebaseConfig = {
-//     apiKey: "AIzaSyB1bqlXwpkWfrrZUxy898nxtgQ3DwV16_k",
-//     authDomain: "nazokake-51a39.firebaseapp.com",
-//     projectId: "nazokake-51a39",
-//     storageBucket: "nazokake-51a39.firebasestorage.app",
-//     messagingSenderId: "619204752710",
-//     appId: "1:619204752710:web:cca3f618562703edfd2147",
-//     measurementId: "G-PDDMGMHJBD"
-// };
-
-
-// const app = initializeApp(firebaseConfig);
-// const auth = getAuth(app);
-// const db = getFirestore(app);
-
-
-// /* =====================================================
-//    ゲームデータ
-//    ===================================================== */
-// / ==================================================
-// // AI設定（OpenRouter）
-// // ==================================================
-// // ここに自分のOpenRouter APIキーを入れてください。
-// const OPENROUTER_API_KEY = "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";
-// const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
-// const OPENROUTER_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
-
-// async function callOpenRouter(messages){
-//     if(!OPENROUTER_API_KEY || OPENROUTER_API_KEY === "APIキーをここに貼り付け"){
-//         throw new Error("OpenRouter APIキーが設定されていません。コード上部のOPENROUTER_API_KEYに貼り付けてください。");
-//     }
-
-//     const response = await fetch(OPENROUTER_ENDPOINT,{
-//         method:"POST",
-//         headers:{
-//             "Authorization":"Bearer " + OPENROUTER_API_KEY,
-//             "Content-Type":"application/json"
-//         },
-//         body:JSON.stringify({
-//             model:OPENROUTER_MODEL,
-//             temperature:0.7,
-//             messages:messages
-//         })
-//     });
-
-//     const data = await response.json();
-//     if(!response.ok){
-//         throw new Error(data?.error?.message || ("APIエラー HTTP " + response.status));
-//     }
-
-//     const content = data?.choices?.[0]?.message?.content;
-//     if(!content){
-//         throw new Error("AIから回答が返ってきませんでした。");
-//     }
-//     return content.trim();
-// }
-
-// async function generateAITopic(){
-//     const text = await callOpenRouter([
-//         {role:"system",content:"あなたは日本語のなぞかけのお題を作るAIです。"},
-//         {role:"user",content:"日本の専門学校生でも考えやすく、面白いなぞかけのお題を1つだけ作ってください。説明や答えは不要です。30文字以内で、お題の言葉だけを返してください。なぞかけなので○○とかけましての○○部分だけでいいです"}
-//     ]);
-//     return text.replace(/^「|」$/g,"").trim();
-// }
-
-// async function scoreWithAI(topic, first, second){
-//     const resultText = await callOpenRouter([
-//         {role:"system",content:"あなたは日本語のなぞかけを公平に採点するAIです。必ずJSONだけを返してください。形式は {\"score\":数字,\"comment\":\"短い日本語コメント\"} です。scoreは0から100の整数です。"},
-//         {role:"user",content:"次のなぞかけを採点してください。\n\nお題："+topic+"\nと説く："+first+"\nその心は："+second+"\n\n評価は、お題との関連性30点、なぞかけとしての成立度30点、発想力20点、面白さ20点を目安にしてください。コメントは2～4文程度で書いてください。"}
-//     ]);
-
-//     let parsed;
-//     try{
-//         const jsonMatch=resultText.match(/\{[\s\S]*\}/);
-//         parsed=JSON.parse(jsonMatch ? jsonMatch[0] : resultText);
-//     }catch(e){
-//         const scoreMatch=resultText.match(/\b(100|[1-9]?\d)\b/);
-//         parsed={score:scoreMatch?Number(scoreMatch[1]):0,comment:resultText};
-//     }
 
-//     let score=Number(parsed.score);
-//     if(!Number.isFinite(score)) score=0;
-//     score=Math.max(0,Math.min(100,Math.round(score)));
-//     return {score:score,comment:parsed.comment || "AIからコメントが返ってきませんでした。"};
-// }
-// const topics = [
-//     "テスト",
-//     "学校",
-//     "夏休み",
-//     "コンビニ",
-//     "スマートフォン",
-//     "猫",
-//     "電車",
-//     "先生",
-//     "ラーメン",
-//     "ゲーム",
-//     "雨",
-//     "体育祭",
-//     "文化祭",
-//     "宿題",
-//     "アルバイト"
-// ];
+/* ==================================================
+   リアルタイム時刻
+================================================== */
 
+/*
+   スマートフォンやパソコンの
+   現在時刻を取得する。
 
-// let username =
-//     localStorage.getItem("username") ||
-//     "プレイヤー名";
+   1秒ごとに更新するので、
 
-// let currentTopic = "";
-// let currentRoomId = null;
-// let currentUserId = null;
+   11:31
+   ↓
+   11:32
+   ↓
+   11:33
 
-// let isHost = false;
+   のように自動的に変わる。
+*/
 
-// let roomUnsubscribe = null;
-// let participantsUnsubscribe = null;
-// let answersUnsubscribe = null;
+function updateCurrentTime(){
 
-// let friendTimerInterval = null;
-// let countdownInterval = null;
+    const now =
+        new Date();
 
-// let hasSubmitted = false;
-// let resultShown = false;
 
-// let authReady = false;
+    const hours =
+        String(
+            now.getHours()
+        ).padStart(2,"0");
 
 
-// /* =====================================================
-//    Firebase匿名ログイン
-//    ※ ここは1回だけ
-//    ===================================================== */
+    const minutes =
+        String(
+            now.getMinutes()
+        ).padStart(2,"0");
 
-// onAuthStateChanged(auth, (user) => {
+
+    const time =
+        hours +
+        ":" +
+        minutes;
+
+
+    document
+        .querySelectorAll(
+            ".current-time"
+        )
+        .forEach(function(element){
+
+            element.textContent =
+                time;
 
-//     if (user) {
+        });
 
-//         currentUserId = user.uid;
-//         authReady = true;
+}
 
-//         console.log(
-//             "Firebase User ID:",
-//             currentUserId
-//         );
 
-//         updateUsernameDisplay();
+/*
+   最初にすぐ表示
+*/
 
-//     }
+updateCurrentTime();
 
-// });
 
+/*
+   1秒ごとに更新
+*/
 
-// signInAnonymously(auth)
-//     .then(() => {
+setInterval(
+    updateCurrentTime,
+    1000
+);
 
-//         console.log(
-//             "Firebase匿名ログイン成功"
-//         );
 
-//     })
-//     .catch((error) => {
+/* ==================================================
+   データ
+================================================== */
 
-//         console.error(
-//             "Firebase匿名ログインエラー:",
-//             error
-//         );
+// ==================================================
+// AI設定（OpenRouter）
+// ==================================================
+// ここに自分のOpenRouter APIキーを入れてください。
+const OPENROUTER_API_KEY = "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";
+const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
+const OPENROUTER_MODEL = "nvidia/nemotron-3-super-120b-a12b:free";
 
-//         alert(
-//             "Firebaseへの接続に失敗しました。\n\n" +
-//             "Firebase Authenticationの匿名ログインが有効か確認してください。"
-//         );
+async function callOpenRouter(messages){
+    if(!OPENROUTER_API_KEY || OPENROUTER_API_KEY === "APIキーをここに貼り付け"){
+        throw new Error("OpenRouter APIキーが設定されていません。コード上部のOPENROUTER_API_KEYに貼り付けてください。");
+    }
 
-//     });
+    const response = await fetch(OPENROUTER_ENDPOINT,{
+        method:"POST",
+        headers:{
+            "Authorization":"Bearer " + OPENROUTER_API_KEY,
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+            model:OPENROUTER_MODEL,
+            temperature:0.7,
+            messages:messages
+        })
+    });
 
+    const data = await response.json();
+    if(!response.ok){
+        throw new Error(data?.error?.message || ("APIエラー HTTP " + response.status));
+    }
 
-// /* =====================================================
-//    画面遷移
-//    ===================================================== */
+    const content = data?.choices?.[0]?.message?.content;
+    if(!content){
+        throw new Error("AIから回答が返ってきませんでした。");
+    }
+    return content.trim();
+}
 
-// window.navigateTo = function(targetViewId) {
+async function generateAITopic(){
+    const text = await callOpenRouter([
+        {role:"system",content:"あなたは日本語のなぞかけのお題を作るAIです。"},
+        {role:"user",content:"日本の専門学校生でも考えやすく、面白いなぞかけのお題を1つだけ作ってください。説明や答えは不要です。30文字以内で、お題の言葉だけを返してください。なぞかけなので○○とかけましての○○部分だけでいいです"}
+    ]);
+    return text.replace(/^「|」$/g,"").trim();
+}
 
-//     document
-//         .querySelectorAll(".app-container")
-//         .forEach(view => {
+async function scoreWithAI(topic, first, second){
+    const resultText = await callOpenRouter([
+        {role:"system",content:"あなたは日本語のなぞかけを公平に採点するAIです。必ずJSONだけを返してください。形式は {\"score\":数字,\"comment\":\"短い日本語コメント\"} です。scoreは0から100の整数です。"},
+        {role:"user",content:"次のなぞかけを採点してください。\n\nお題："+topic+"\nと説く："+first+"\nその心は："+second+"\n\n評価は、お題との関連性30点、なぞかけとしての成立度30点、発想力20点、面白さ20点を目安にしてください。コメントは2～4文程度で書いてください。"}
+    ]);
 
-//             view.classList.remove("active");
+    let parsed;
+    try{
+        const jsonMatch=resultText.match(/\{[\s\S]*\}/);
+        parsed=JSON.parse(jsonMatch ? jsonMatch[0] : resultText);
+    }catch(e){
+        const scoreMatch=resultText.match(/\b(100|[1-9]?\d)\b/);
+        parsed={score:scoreMatch?Number(scoreMatch[1]):0,comment:resultText};
+    }
 
-//         });
+    let score=Number(parsed.score);
+    if(!Number.isFinite(score)) score=0;
+    score=Math.max(0,Math.min(100,Math.round(score)));
+    return {score:score,comment:parsed.comment || "AIからコメントが返ってきませんでした。"};
+}
 
+const questions = [
 
-//     const target =
-//         document.getElementById(targetViewId);
+    "学校",
 
+    "スマホ",
 
-//     if (target) {
+    "猫",
 
-//         target.classList.add("active");
+    "ゲーム",
 
-//     }
+    "コンビニ",
 
-// };
+    "夏休み",
 
+    "雨",
 
-// /* =====================================================
-//    ユーザー名
-//    ===================================================== */
+    "宇宙",
 
-// function updateUsernameDisplay() {
+    "スポーツ",
 
-//     const elements = [
-//         "main-username",
-//         "solo-username"
-//     ];
+    "ラーメン",
 
+    "海",
 
-//     elements.forEach(id => {
+    "映画",
 
-//         const element =
-//             document.getElementById(id);
+    "時計",
 
-//         if (element) {
+    "料理",
 
-//             element.textContent =
-//                 username;
+    "旅行",
 
-//         }
+    "犬",
 
-//     });
+    "音楽",
 
-// }
+    "朝",
 
+    "お祭り",
 
-// window.openUsernameScreen = function() {
+    "宿題"
 
-//     const input =
-//         document.getElementById(
-//             "username-input"
-//         );
+];
 
 
-//     if (input) {
+let soloQuestion = "";
 
-//         input.value =
-//             username;
 
-//     }
+let selectedIcon =
+    localStorage.getItem(
+        "nazokakeIcon"
+    ) || "01";
 
 
-//     navigateTo(
-//         "view-username"
-//     );
+let playerName =
+    localStorage.getItem(
+        "nazokakePlayer"
+    ) || "プレイヤー名";
 
-// };
 
+let currentRoom = null;
 
-// window.changeUsername = function() {
 
-//     const input =
-//         document.getElementById(
-//             "username-input"
-//         );
+let friendTimer = null;
 
 
-//     if (!input) {
+let soloTimer = null;
 
-//         return;
 
-//     }
+let soloTimeLeft = 90;
 
 
-//     const newName =
-//         input.value.trim();
+let friendTimeLeft = 90;
 
 
-//     if (!newName) {
+/* ==================================================
+   画面切り替え
+================================================== */
 
-//         alert(
-//             "ユーザー名を入力してください。"
-//         );
+function show(id){
 
-//         return;
+    if(soloTimer){
 
-//     }
+        clearInterval(
+            soloTimer
+        );
 
+        soloTimer = null;
 
-//     if (newName.length > 20) {
+    }
 
-//         alert(
-//             "ユーザー名は20文字以内にしてください。"
-//         );
 
-//         return;
+    if(friendTimer){
 
-//     }
+        clearInterval(
+            friendTimer
+        );
 
+        friendTimer = null;
 
-//     username =
-//         newName;
+    }
 
 
-//     localStorage.setItem(
-//         "username",
-//         username
-//     );
+    document
+        .querySelectorAll(".screen")
+        .forEach(function(screen){
 
+            screen.classList.remove(
+                "active"
+            );
 
-//     updateUsernameDisplay();
+        });
 
 
-//     alert(
-//         "ユーザー名を変更しました！"
-//     );
+    const target =
+        document.getElementById(id);
 
 
-//     navigateTo(
-//         "view-main"
-//     );
+    if(target){
 
-// };
+        target.classList.add(
+            "active"
+        );
 
+    }
 
-// /* =====================================================
-//    お題
-//    ===================================================== */
 
-// function getRandomTopic() {
+    window.scrollTo(
+        0,
+        0
+    );
 
-//     return topics[
-//         Math.floor(
-//             Math.random() *
-//             topics.length
-//         )
-//     ];
 
-// }
+    /*
+       画面を切り替えたときも
+       現在時刻をすぐ反映
+    */
 
+    updateCurrentTime();
 
-// /* =====================================================
-//    ソロ
-//    ===================================================== */
+    /*
+       画面操作はユーザー操作として扱われることが多いため、
+       BGM再生をここでも試す。
+    */
+    if(bgmEnabled){
+        startBGM();
+    }
 
-// function updateSoloTopicDisplay() {
+}
 
-//     const topic =
-//         document.getElementById(
-//             "solo-topic-display"
-//         );
 
+/* ==================================================
+   トースト
+================================================== */
 
-//     const kake =
-//         document.getElementById(
-//             "solo-kake-text"
-//         );
+function showToast(message){
 
+    const toast =
+        document.getElementById(
+            "toast"
+        );
 
-//     if (topic) {
 
-//         topic.textContent =
-//             currentTopic;
+    toast.textContent =
+        message;
 
-//     }
 
+    toast.classList.add(
+        "show"
+    );
 
-//     if (kake) {
 
-//         kake.textContent =
-//             `「${currentTopic}」とかけて、`;
+    setTimeout(function(){
 
-//     }
+        toast.classList.remove(
+            "show"
+        );
 
-// }
+    },1800);
 
+}
 
-// window.startSoloGame = function() {
 
-//     currentTopic =
-//         getRandomTopic();
+/* ==================================================
+   ランダムお題
+================================================== */
 
+function pickQuestion(){
 
-//     updateSoloTopicDisplay();
+    return questions[
+        Math.floor(
+            Math.random() *
+            questions.length
+        )
+    ];
 
+}
 
-//     const totoku =
-//         document.getElementById(
-//             "solo-totoku-input"
-//         );
 
+/* ==================================================
+   一人用開始
+================================================== */
 
-//     const kokoro =
-//         document.getElementById(
-//             "solo-kokoro-input"
-//         );
+function startSolo(){
 
+    soloQuestion = "";
 
-//     if (totoku) {
+    document.getElementById("soloQuestion").textContent = "AIがお題を考えています…";
+    document.getElementById("soloFirstAnswer").value = "";
+    document.getElementById("soloSecondAnswer").value = "";
+    document.getElementById("soloAIError").style.display = "none";
 
-//         totoku.value = "";
+    show("solo");
+    startSoloTimer();
 
-//     }
+    generateAITopic().then(function(topic){
+        soloQuestion = topic;
+        document.getElementById("soloQuestion").textContent = "「" + topic + "」とかけまして";
+    }).catch(function(error){
+        document.getElementById("soloQuestion").textContent = "お題の生成に失敗しました";
+        const el=document.getElementById("soloAIError");
+        el.textContent="AIお題生成エラー：\n"+error.message;
+        el.style.display="block";
+    });
 
+}
 
-//     if (kokoro) {
 
-//         kokoro.value = "";
 
-//     }
+/* ==================================================
+   一人用90秒カウントダウン
+================================================== */
 
+function startSoloTimer(){
 
-//     navigateTo(
-//         "view-solo-play"
-//     );
+    if(soloTimer){
 
-// };
+        clearInterval(
+            soloTimer
+        );
 
+    }
 
-// window.startSoloAgain = function() {
 
-//     startSoloGame();
+    soloTimeLeft = 90;
 
-// };
 
+    const timer =
+        document.getElementById(
+            "soloTimer"
+        );
 
-// window.submitSoloAnswer = function() {
 
-//     const totoku =
-//         document.getElementById(
-//             "solo-totoku-input"
-//         ).value.trim() ||
-//         "（無回答）";
+    timer.textContent =
+        "残り時間：90秒";
 
+    timer.classList.remove(
+        "warning"
+    );
 
-//     const kokoro =
-//         document.getElementById(
-//             "solo-kokoro-input"
-//         ).value.trim() ||
-//         "（無回答）";
 
+    soloTimer =
+        setInterval(function(){
 
-//     document.getElementById(
-//         "display-your-topic"
-//     ).textContent =
-//         currentTopic;
+            soloTimeLeft--;
 
 
-//     document.getElementById(
-//         "display-your-kake"
-//     ).textContent =
-//         `「${currentTopic}」とかけて、`;
+            timer.textContent =
+                "残り時間：" +
+                soloTimeLeft +
+                "秒";
 
 
-//     document.getElementById(
-//         "display-your-totoku"
-//     ).textContent =
-//         `「${totoku}」ととく。`;
+            if(soloTimeLeft <= 10){
 
+                timer.classList.add(
+                    "warning"
+                );
 
-//     document.getElementById(
-//         "display-your-kokoro"
-//     ).textContent =
-//         `その心は、「${kokoro}」`;
+            }
 
 
-//     const score =
-//         calculateScore(
-//             totoku,
-//             kokoro
-//         );
+            if(soloTimeLeft <= 0){
 
+                clearInterval(
+                    soloTimer
+                );
 
-//     document.getElementById(
-//         "display-score"
-//     ).textContent =
-//         score + "点";
+                soloTimer = null;
 
+                submitSolo(true);
 
-//     navigateTo(
-//         "view-loading"
-//     );
+            }
 
+        },1000);
 
-//     setTimeout(() => {
+}
 
-//         navigateTo(
-//             "view-result"
-//         );
 
-//     }, 1500);
 
-// };
+/* ==================================================
+   一人用回答
+================================================== */
 
+async function submitSolo(auto){
 
-// /* =====================================================
-//    スコア
-//    ===================================================== */
+    if(auto === undefined){ auto = false; }
 
-// function calculateScore(
-//     totoku,
-//     kokoro
-// ) {
+    if(soloTimer){ clearInterval(soloTimer); soloTimer=null; }
 
-//     if (
-//         totoku === "（無回答）" &&
-//         kokoro === "（無回答）"
-//     ) {
+    const first = document.getElementById("soloFirstAnswer").value.trim();
+    const second = document.getElementById("soloSecondAnswer").value.trim();
+    const errorEl = document.getElementById("soloAIError");
+    errorEl.style.display="none";
 
-//         return 0;
+    if(!soloQuestion){
+        showToast("AIがお題を作成中です。少し待ってください。");
+        startSoloTimer();
+        return;
+    }
 
-//     }
+    if((!first || !second) && !auto){
+        showToast("2か所とも入力してください");
+        startSoloTimer();
+        return;
+    }
 
+    const finalFirst = first || "時間切れ";
+    const finalSecond = second || "回答なし";
 
-//     let score = 60;
+    show("soloAI");
 
+    try{
+        const result = await scoreWithAI(soloQuestion,finalFirst,finalSecond);
 
-//     score += Math.min(
-//         totoku.length,
-//         15
-//     );
+        document.getElementById("soloScore").textContent = result.score + "点";
+        document.getElementById("soloResultAnswer").textContent =
+            "「" + soloQuestion + "」とかけまして\n" +
+            "「" + finalFirst + "」とときます\n" +
+            "その心は？ " + finalSecond;
+        document.getElementById("soloComment").textContent = result.comment;
+        show("soloResult");
+    }catch(error){
+        show("solo");
+        errorEl.textContent="AI採点エラー：\n"+error.message;
+        errorEl.style.display="block";
+        startSoloTimer();
+    }
+}
 
 
-//     score += Math.min(
-//         Math.floor(
-//             kokoro.length / 2
-//         ),
-//         20
-//     );
 
+/* ==================================================
+   部屋作成
+================================================== */
 
-//     return Math.min(
-//         score,
-//         100
-//     );
+function createRoom(){
 
-// }
+    const name =
+        document.getElementById(
+            "roomName"
+        ).value.trim();
 
 
-// /* =====================================================
-//    部屋番号
-//    ===================================================== */
+    const password =
+        document.getElementById(
+            "roomPassword"
+        ).value.trim();
 
-// function generateRoomNumber() {
 
-//     return String(
-//         Math.floor(
-//             100000 +
-//             Math.random() * 900000
-//         )
-//     );
+    const time =
+        Number(
+            document.getElementById(
+                "roomTime"
+            ).value
+        );
 
-// }
 
+    const rounds =
+        Number(
+            document.getElementById(
+                "roomRounds"
+            ).value
+        );
 
-// /* =====================================================
-//    部屋作成
-//    ===================================================== */
 
-// window.createRoom = async function() {
+    if(!name){
 
-//     console.log(
-//         "部屋作成開始"
-//     );
+        showToast(
+            "部屋名を入力してください"
+        );
 
+        return;
 
-//     if (!authReady || !currentUserId) {
+    }
 
-//         alert(
-//             "Firebaseに接続中です。\n" +
-//             "2～3秒待ってから、もう一度押してください。"
-//         );
 
-//         return;
+    currentRoom = {
 
-//     }
+        name:name,
 
+        password:password,
 
-//     try {
+        time:time,
 
-//         const roomId =
-//             await createUniqueRoom();
+        rounds:rounds
 
+    };
 
-//         console.log(
-//             "作成する部屋番号:",
-//             roomId
-//         );
 
+    document.getElementById(
+        "lobbyName"
+    ).textContent =
+        name;
 
-//         currentRoomId =
-//             roomId;
 
-//         isHost = true;
+    document.getElementById(
+        "lobbyP1"
+    ).textContent =
+        playerName;
 
 
-//         currentTopic =
-//             getRandomTopic();
+    show(
+        "lobby"
+    );
 
+}
 
-//         /* -----------------------------
-//            rooms/{roomId}
-//            ----------------------------- */
 
-//         await setDoc(
-//             doc(
-//                 db,
-//                 "rooms",
-//                 roomId
-//             ),
-//             {
+/* ==================================================
+   部屋検索
+================================================== */
 
-//                 hostId:
-//                     currentUserId,
+function joinRoom(){
 
-//                 topic:
-//                     currentTopic,
+    const id =
+        document.getElementById(
+            "joinId"
+        ).value.trim();
 
-//                 status:
-//                     "waiting",
 
-//                 createdAt:
-//                     serverTimestamp(),
+    if(!id){
 
-//                 roundStartedAt:
-//                     null
+        showToast(
+            "部屋IDを入力してください"
+        );
 
-//             }
-//         );
+        return;
 
+    }
 
-//         console.log(
-//             "rooms作成成功"
-//         );
 
+    currentRoom = {
 
-//         /* -----------------------------
-//            participants/{uid}
-//            ----------------------------- */
+        name:
+            "部屋 " +
+            id,
 
-//         await setDoc(
-//             doc(
-//                 db,
-//                 "rooms",
-//                 roomId,
-//                 "participants",
-//                 currentUserId
-//             ),
-//             {
+        time:90,
 
-//                 name:
-//                     username,
+        rounds:3
 
-//                 uid:
-//                     currentUserId,
+    };
 
-//                 host:
-//                     true,
 
-//                 joinedAt:
-//                     serverTimestamp(),
+    document.getElementById(
+        "lobbyName"
+    ).textContent =
+        currentRoom.name;
 
-//                 submitted:
-//                     false
 
-//             }
-//         );
+    document.getElementById(
+        "lobbyP1"
+    ).textContent =
+        playerName;
 
 
-//         console.log(
-//             "参加者登録成功"
-//         );
+    show(
+        "lobby"
+    );
 
+}
 
-//         setupRoomListeners();
 
+/* ==================================================
+   マルチゲーム開始
+================================================== */
 
-//         navigateTo(
-//             "view-waiting-room"
-//         );
+function startMultiGame(){
 
+    if(!currentRoom){
 
-//     } catch (error) {
+        currentRoom = {
 
-//         console.error(
-//             "部屋作成エラー:",
-//             error
-//         );
+            name:"テストルーム",
 
+            time:90,
 
-//         alert(
-//             "部屋を作れませんでした。\n\n" +
-//             "エラー内容:\n" +
-//             error.message
-//         );
+            rounds:3
 
-//     }
+        };
 
-// };
+    }
 
 
-// /* =====================================================
-//    重複しない部屋番号
-//    ===================================================== */
+    const question =
+        pickQuestion();
 
-// async function createUniqueRoom() {
 
-//     for (
-//         let i = 0;
-//         i < 10;
-//         i++
-//     ) {
+    document.getElementById(
+        "friendQuestion"
+    ).textContent =
+        "お題：" +
+        question;
 
-//         const id =
-//             generateRoomNumber();
 
+    document.getElementById(
+        "friendAnswer"
+    ).value =
+        "";
 
-//         const roomRef =
-//             doc(
-//                 db,
-//                 "rooms",
-//                 id
-//             );
 
+    friendTimeLeft =
+        currentRoom.time ||
+        90;
 
-//         const snapshot =
-//             await getDoc(
-//                 roomRef
-//             );
 
+    document.getElementById(
+        "friendTime"
+    ).textContent =
+        friendTimeLeft +
+        "秒";
 
-//         if (!snapshot.exists()) {
 
-//             return id;
+    show(
+        "multiGame"
+    );
 
-//         }
 
-//     }
+    startFriendTimer();
 
+}
 
-//     throw new Error(
-//         "空いている部屋番号を作れませんでした。"
-//     );
 
-// }
+/* ==================================================
+   マルチタイマー
+================================================== */
 
+function startFriendTimer(){
 
-// /* =====================================================
-//    部屋参加
-//    ===================================================== */
+    if(friendTimer){
 
-// window.joinRoom = async function() {
+        clearInterval(
+            friendTimer
+        );
 
-//     const input =
-//         document.getElementById(
-//             "room-number-input"
-//         );
+    }
 
 
-//     if (!input) {
+    friendTimer =
+        setInterval(function(){
 
-//         return;
+            friendTimeLeft--;
 
-//     }
 
+            document.getElementById(
+                "friendTime"
+            ).textContent =
+                friendTimeLeft +
+                "秒";
 
-//     const roomId =
-//         input.value.trim();
 
+            if(
+                friendTimeLeft <= 0
+            ){
 
-//     if (!/^\d{6}$/.test(roomId)) {
+                clearInterval(
+                    friendTimer
+                );
 
-//         alert(
-//             "6桁の部屋番号を入力してください。"
-//         );
+                friendTimer =
+                    null;
 
-//         return;
 
-//     }
+                submitMulti(
+                    true
+                );
 
+            }
 
-//     if (!authReady || !currentUserId) {
+        },1000);
 
-//         alert(
-//             "Firebaseに接続中です。\n" +
-//             "少し待ってからもう一度お試しください。"
-//         );
+}
 
-//         return;
 
-//     }
+/* ==================================================
+   マルチ回答
+================================================== */
 
+function submitMulti(auto){
 
-//     try {
+    if(auto === undefined){
 
-//         const roomRef =
-//             doc(
-//                 db,
-//                 "rooms",
-//                 roomId
-//             );
+        auto = false;
 
+    }
 
-//         const roomSnapshot =
-//             await getDoc(roomRef);
 
+    if(friendTimer){
 
-//         if (!roomSnapshot.exists()) {
+        clearInterval(
+            friendTimer
+        );
 
-//             alert(
-//                 "その部屋は存在しません。"
-//             );
+        friendTimer =
+            null;
 
-//             return;
+    }
 
-//         }
 
+    const answer =
+        document.getElementById(
+            "friendAnswer"
+        ).value.trim();
 
-//         const room =
-//             roomSnapshot.data();
 
+    if(
+        !answer &&
+        !auto
+    ){
 
-//         if (
-//             room.status !==
-//             "waiting"
-//         ) {
+        showToast(
+            "答えを入力してください"
+        );
 
-//             alert(
-//                 "このゲームはすでに始まっています。"
-//             );
 
-//             return;
+        startFriendTimer();
 
-//         }
 
+        return;
 
-//         const participantRef =
-//             doc(
-//                 db,
-//                 "rooms",
-//                 roomId,
-//                 "participants",
-//                 currentUserId
-//             );
+    }
 
 
-//         const participantSnapshot =
-//             await getDoc(
-//                 participantRef
-//             );
+    show(
+        "multiAI"
+    );
 
 
-//         if (!participantSnapshot.exists()) {
+    setTimeout(function(){
 
-//             const allParticipants =
-//                 await getParticipants(
-//                     roomId
-//                 );
+        const myScore =
+            700 +
+            Math.floor(
+                Math.random() *
+                301
+            );
 
 
-//             if (
-//                 allParticipants.length >= 5
-//             ) {
+        const secondScore =
+            650 +
+            Math.floor(
+                Math.random() *
+                301
+            );
 
-//                 alert(
-//                     "この部屋は満員です。"
-//                 );
 
-//                 return;
+        const thirdScore =
+            600 +
+            Math.floor(
+                Math.random() *
+                301
+            );
 
-//             }
 
-//         }
+        const fourthScore =
+            550 +
+            Math.floor(
+                Math.random() *
+                301
+            );
 
 
-//         currentRoomId =
-//             roomId;
+        document.getElementById(
+            "resultPlayer"
+        ).textContent =
+            playerName;
 
-//         isHost = false;
 
-//         currentTopic =
-//             room.topic;
+        document.getElementById(
+            "friendTotal"
+        ).textContent =
+            myScore;
 
 
-//         await setDoc(
-//             participantRef,
-//             {
+        const list =
+            document.getElementById(
+                "friendResultList"
+            );
 
-//                 name:
-//                     username,
 
-//                 uid:
-//                     currentUserId,
+        list.innerHTML =
+            "";
 
-//                 host:
-//                     false,
 
-//                 joinedAt:
-//                     serverTimestamp(),
+        addResultRow(
+            list,
+            "1位",
+            playerName,
+            myScore
+        );
 
-//                 submitted:
-//                     false
 
-//             }
-//         );
+        addResultRow(
+            list,
+            "2位",
+            "プレイヤー2",
+            secondScore
+        );
 
 
-//         setupRoomListeners();
+        addResultRow(
+            list,
+            "3位",
+            "プレイヤー3",
+            thirdScore
+        );
 
 
-//         navigateTo(
-//             "view-waiting-room"
-//         );
+        addResultRow(
+            list,
+            "4位",
+            "プレイヤー4",
+            fourthScore
+        );
 
 
-//     } catch (error) {
+        show(
+            "multiResult"
+        );
 
-//         console.error(
-//             "部屋参加エラー:",
-//             error
-//         );
 
+    },1800);
 
-//         alert(
-//             "部屋への参加に失敗しました。\n\n" +
-//             error.message
-//         );
+}
 
-//     }
 
-// };
+/* ==================================================
+   結果行
+================================================== */
 
+function addResultRow(
+    parent,
+    rank,
+    name,
+    score
+){
 
-// /* =====================================================
-//    参加者取得
-//    ===================================================== */
+    const row =
+        document.createElement(
+            "div"
+        );
 
-// async function getParticipants(
-//     roomId
-// ) {
 
-//     const snapshot =
-//         await getDocs(
-//             collection(
-//                 db,
-//                 "rooms",
-//                 roomId,
-//                 "participants"
-//             )
-//         );
+    row.className =
+        "friend-result-item";
 
 
-//     return snapshot.docs.map(
-//         item => item.data()
-//     );
+    row.innerHTML =
 
-// }
+        "<span>" +
+        rank +
+        "</span>" +
 
+        "<div class='icon-small'>" +
+        "アイコン" +
+        "</div>" +
 
-// /* =====================================================
-//    部屋監視
-//    ===================================================== */
+        "<span>" +
+        name +
+        "</span>" +
 
-// function setupRoomListeners() {
+        "<div class='line'></div>" +
 
-//     removeRoomListeners();
+        "<b>" +
+        score +
+        "点" +
+        "</b>";
 
 
-//     if (!currentRoomId) {
+    parent.appendChild(
+        row
+    );
 
-//         return;
+}
 
-//     }
 
+/* ==================================================
+   プレイヤー名変更
+================================================== */
 
-//     const roomRef =
-//         doc(
-//             db,
-//             "rooms",
-//             currentRoomId
-//         );
+function changePlayerName(){
 
+    const newName =
+        prompt(
+            "プレイヤー名を入力してください",
+            playerName
+        );
 
-//     roomUnsubscribe =
-//         onSnapshot(
-//             roomRef,
-//             snapshot => {
 
-//                 if (!snapshot.exists()) {
+    if(!newName){
 
-//                     alert(
-//                         "部屋が削除されました。"
-//                     );
+        return;
 
-//                     leaveRoom();
+    }
 
-//                     return;
 
-//                 }
+    playerName =
+        newName.trim();
 
 
-//                 const room =
-//                     snapshot.data();
+    if(!playerName){
 
+        return;
 
-//                 currentTopic =
-//                     room.topic;
+    }
 
 
-//                 updateRoomDisplays(
-//                     room
-//                 );
+    localStorage.setItem(
+        "nazokakePlayer",
+        playerName
+    );
 
 
-//                 if (
-//                     room.status ===
-//                     "countdown"
-//                 ) {
+    updateProfile();
 
-//                     startCountdownScreen(
-//                         room.topic
-//                     );
 
-//                 }
+    showToast(
+        "プレイヤー名を変更しました"
+    );
 
+}
 
-//                 if (
-//                     room.status ===
-//                     "playing"
-//                 ) {
 
-//                     goToFriendInputView(
-//                         room.topic
-//                     );
+/* ==================================================
+   アイコン選択
+================================================== */
 
-//                 }
+function selectIcon(
+    element,
+    icon
+){
 
+    document
+        .querySelectorAll(
+            ".icon-choice"
+        )
+        .forEach(function(btn){
 
-//                 if (
-//                     room.status ===
-//                     "result"
-//                 ) {
+            btn.classList.remove(
+                "selected"
+            );
 
-//                     showFriendResult();
+        });
 
-//                 }
 
-//             },
-//             error => {
+    element.classList.add(
+        "selected"
+    );
 
-//                 console.error(
-//                     "部屋監視エラー:",
-//                     error
-//                 );
 
-//             }
-//         );
+    selectedIcon =
+        icon;
 
+}
 
-//     const participantsRef =
-//         collection(
-//             db,
-//             "rooms",
-//             currentRoomId,
-//             "participants"
-//         );
 
+/* ==================================================
+   アイコン保存
+================================================== */
 
-//     participantsUnsubscribe =
-//         onSnapshot(
-//             participantsRef,
-//             snapshot => {
+function saveIcon(){
 
-//                 const participants =
-//                     snapshot.docs.map(
-//                         item => ({
-//                             id:
-//                                 item.id,
-//                             ...item.data()
-//                         })
-//                     );
+    localStorage.setItem(
+        "nazokakeIcon",
+        selectedIcon
+    );
 
 
-//                 renderParticipants(
-//                     participants
-//                 );
+    updateProfile();
 
 
-//                 checkEveryoneSubmitted(
-//                     participants
-//                 );
+    showToast(
+        "アイコンを変更しました"
+    );
 
-//             },
-//             error => {
 
-//                 console.error(
-//                     "参加者監視エラー:",
-//                     error
-//                 );
+    setTimeout(function(){
 
-//             }
-//         );
+        show(
+            "profile"
+        );
 
+    },500);
 
-//     const answersRef =
-//         collection(
-//             db,
-//             "rooms",
-//             currentRoomId,
-//             "answers"
-//         );
+}
 
 
-//     answersUnsubscribe =
-//         onSnapshot(
-//             answersRef,
-//             snapshot => {
+/* ==================================================
+   プロフィール反映
+================================================== */
 
-//                 updateAnswerWaitingStatus(
-//                     snapshot
-//                 );
+function updateProfile(){
 
+    document.getElementById(
+        "homePlayer"
+    ).textContent =
+        playerName;
 
-//                 if (resultShown) {
 
-//                     renderFriendResults(
-//                         snapshot
-//                     );
+    document.getElementById(
+        "lobbyP1"
+    ).textContent =
+        playerName;
 
-//                 }
 
-//             },
-//             error => {
+    document.getElementById(
+        "resultPlayer"
+    ).textContent =
+        playerName;
 
-//                 console.error(
-//                     "回答監視エラー:",
-//                     error
-//                 );
+}
 
-//             }
-//         );
 
-// }
+/* ==================================================
+   BGM設定
+================================================== */
 
+const bgmAudio = document.getElementById("bgmAudio");
 
-// /* =====================================================
-//    リスナー解除
-//    ===================================================== */
+let bgmEnabled =
+    localStorage.getItem("nazokakeBgmEnabled") !== "false";
 
-// function removeRoomListeners() {
+let bgmVolume =
+    Number(
+        localStorage.getItem("nazokakeBgmVolume") || "70"
+    );
 
-//     if (roomUnsubscribe) {
+let seEnabled =
+    localStorage.getItem("nazokakeSeEnabled") !== "false";
 
-//         roomUnsubscribe();
-//         roomUnsubscribe = null;
+let voiceEnabled =
+    localStorage.getItem("nazokakeVoiceEnabled") !== "false";
 
-//     }
 
+function applyBGMSettings(){
 
-//     if (participantsUnsubscribe) {
+    if(!bgmAudio){
+        return;
+    }
 
-//         participantsUnsubscribe();
-//         participantsUnsubscribe = null;
+    bgmAudio.volume =
+        Math.max(
+            0,
+            Math.min(
+                1,
+                bgmVolume / 100
+            )
+        );
 
-//     }
+    updateBGMControls();
 
+}
 
-//     if (answersUnsubscribe) {
 
-//         answersUnsubscribe();
-//         answersUnsubscribe = null;
+function startBGM(){
 
-//     }
+    if(!bgmAudio || !bgmEnabled){
+        return;
+    }
 
-// }
+    /*
+       スマホでは自動再生が制限されるため、
+       ユーザーがボタンを押したタイミングで再生を試みる。
+    */
+    bgmAudio.play().catch(function(){
 
+        /* 音源がまだ無い場合などは何もしない */
 
-// /* =====================================================
-//    部屋表示
-//    ===================================================== */
+    });
 
-// function updateRoomDisplays(room) {
+}
 
-//     const roomNumber =
-//         document.getElementById(
-//             "waiting-room-number"
-//         );
 
+function stopBGM(){
 
-//     const inputRoom =
-//         document.getElementById(
-//             "input-room-number"
-//         );
+    if(!bgmAudio){
+        return;
+    }
 
+    bgmAudio.pause();
 
-//     if (roomNumber) {
+}
 
-//         roomNumber.textContent =
-//             currentRoomId;
 
-//     }
+function toggleBGM(){
 
+    bgmEnabled =
+        !bgmEnabled;
 
-//     if (inputRoom) {
+    localStorage.setItem(
+        "nazokakeBgmEnabled",
+        bgmEnabled
+    );
 
-//         inputRoom.textContent =
-//             currentRoomId;
+    if(bgmEnabled){
 
-//     }
+        applyBGMSettings();
+        startBGM();
 
+    }
+    else{
 
-//     const waitingTopic =
-//         document.getElementById(
-//             "waiting-topic"
-//         );
+        stopBGM();
 
+    }
 
-//     if (waitingTopic) {
+    updateBGMControls();
 
-//         waitingTopic.textContent =
-//             "お題：" +
-//             room.topic;
+}
 
-//     }
 
+function changeBGMVolume(value){
 
-//     const startButton =
-//         document.getElementById(
-//             "start-friend-button"
-//         );
+    bgmVolume =
+        Number(value);
 
+    localStorage.setItem(
+        "nazokakeBgmVolume",
+        bgmVolume
+    );
 
-//     if (startButton) {
+    if(bgmAudio){
 
-//         startButton.style.display =
-//             isHost
-//                 ? "block"
-//                 : "none";
+        bgmAudio.volume =
+            bgmVolume / 100;
 
-//     }
+    }
 
-// }
+    updateBGMControls();
 
+}
 
-// /* =====================================================
-//    参加者表示
-//    ===================================================== */
 
-// function renderParticipants(
-//     participants
-// ) {
+function toggleSE(){
 
-//     const containers = [
+    seEnabled =
+        !seEnabled;
 
-//         document.getElementById(
-//             "participant-list"
-//         ),
+    localStorage.setItem(
+        "nazokakeSeEnabled",
+        seEnabled
+    );
 
-//         document.getElementById(
-//             "input-participant-list"
-//         )
+    updateBGMControls();
 
-//     ];
+}
 
 
-//     containers.forEach(
-//         container => {
+function toggleVoice(){
 
-//             if (!container) {
+    voiceEnabled =
+        !voiceEnabled;
 
-//                 return;
+    localStorage.setItem(
+        "nazokakeVoiceEnabled",
+        voiceEnabled
+    );
 
-//             }
+    updateBGMControls();
 
+}
 
-//             container.innerHTML = "";
 
+function updateBGMControls(){
 
-//             participants.forEach(
-//                 player => {
+    const bgmToggle =
+        document.getElementById(
+            "bgmToggle"
+        );
 
-//                     const row =
-//                         document.createElement(
-//                             "div"
-//                         );
+    const bgmRange =
+        document.getElementById(
+            "bgmVolume"
+        );
 
-//                     row.className =
-//                         "player-list-item";
+    const bgmValue =
+        document.getElementById(
+            "bgmVolumeValue"
+        );
 
+    const seToggle =
+        document.getElementById(
+            "seToggle"
+        );
 
-//                     const icon =
-//                         document.createElement(
-//                             "div"
-//                         );
+    const voiceToggle =
+        document.getElementById(
+            "voiceToggle"
+        );
 
-//                     icon.className =
-//                         "player-icon";
 
+    if(bgmToggle){
 
-//                     if (
-//                         player.uid ===
-//                         currentUserId
-//                     ) {
+        bgmToggle.textContent =
+            bgmEnabled ? "ON" : "OFF";
 
-//                         icon.classList.add(
-//                             "player-icon-dark"
-//                         );
+        bgmToggle.classList.toggle(
+            "on",
+            bgmEnabled
+        );
 
-//                     }
+    }
 
 
-//                     const name =
-//                         document.createElement(
-//                             "div"
-//                         );
+    if(bgmRange){
 
-//                     name.className =
-//                         "player-name";
+        bgmRange.value =
+            bgmVolume;
 
-//                     name.textContent =
-//                         player.name +
-//                         (
-//                             player.uid ===
-//                             currentUserId
-//                                 ? " (あなた)"
-//                                 : ""
-//                         );
+    }
 
 
-//                     const status =
-//                         document.createElement(
-//                             "div"
-//                         );
+    if(bgmValue){
 
-//                     status.className =
-//                         "player-score";
+        bgmValue.textContent =
+            bgmVolume + "%";
 
+    }
 
-//                     if (player.host) {
 
-//                         status.textContent =
-//                             "ホスト";
+    if(seToggle){
 
-//                     } else if (
-//                         player.submitted
-//                     ) {
+        seToggle.textContent =
+            seEnabled ? "ON" : "OFF";
 
-//                         status.textContent =
-//                             "提出済み";
+        seToggle.classList.toggle(
+            "on",
+            seEnabled
+        );
 
-//                         status.classList.add(
-//                             "ready"
-//                         );
+    }
 
-//                     } else {
 
-//                         status.textContent =
-//                             "回答中";
+    if(voiceToggle){
 
-//                     }
+        voiceToggle.textContent =
+            voiceEnabled ? "ON" : "OFF";
 
+        voiceToggle.classList.toggle(
+            "on",
+            voiceEnabled
+        );
 
-//                     row.appendChild(
-//                         icon
-//                     );
+    }
 
-//                     row.appendChild(
-//                         name
-//                     );
+}
 
-//                     row.appendChild(
-//                         status
-//                     );
 
+applyBGMSettings();
+updateBGMControls();
 
-//                     container.appendChild(
-//                         row
-//                     );
 
-//                 }
-//             );
+/* ==================================================
+   初期処理
+================================================== */
 
+updateProfile();
 
-//             const title =
-//                 container.id ===
-//                 "participant-list"
-//                     ? document.getElementById(
-//                         "participant-title"
-//                     )
-//                     : document.getElementById(
-//                         "input-participant-title"
-//                     );
-
-
-//             if (title) {
-
-//                 title.textContent =
-//                     `参加中のプレイヤー (${participants.length}/5)`;
-
-//             }
-
-//         }
-//     );
-
-// }
-
-
-// /* =====================================================
-//    部屋番号コピー
-//    ===================================================== */
-
-// window.copyRoomNumber = function() {
-
-//     if (!currentRoomId) {
-
-//         return;
-
-//     }
-
-
-//     if (
-//         navigator.clipboard &&
-//         navigator.clipboard.writeText
-//     ) {
-
-//         navigator.clipboard
-//             .writeText(currentRoomId)
-//             .then(() => {
-
-//                 alert(
-//                     "部屋番号をコピーしました！"
-//                 );
-
-//             })
-//             .catch(() => {
-
-//                 alert(
-//                     "コピーできませんでした。\n" +
-//                     "部屋番号：" +
-//                     currentRoomId
-//                 );
-
-//             });
-
-//     } else {
-
-//         alert(
-//             "部屋番号：" +
-//             currentRoomId
-//         );
-
-//     }
-
-// };
-
-
-// /* =====================================================
-//    ホストがゲーム開始
-//    ===================================================== */
-
-// window.startFriendMatch =
-// async function() {
-
-//     if (!isHost) {
-
-//         alert(
-//             "ゲーム開始はホストのみできます。"
-//         );
-
-//         return;
-
-//     }
-
-
-//     if (!currentRoomId) {
-
-//         return;
-
-//     }
-
-
-//     try {
-
-//         await updateDoc(
-//             doc(
-//                 db,
-//                 "rooms",
-//                 currentRoomId
-//             ),
-//             {
-
-//                 status:
-//                     "countdown",
-
-//                 roundStartedAt:
-//                     serverTimestamp()
-
-//             }
-//         );
-
-
-//     } catch (error) {
-
-//         console.error(
-//             "ゲーム開始エラー:",
-//             error
-//         );
-
-
-//         alert(
-//             "ゲームを開始できませんでした。\n\n" +
-//             error.message
-//         );
-
-//     }
-
-// };
-
-
-// /* =====================================================
-//    カウントダウン
-//    ===================================================== */
-
-// function startCountdownScreen(topic) {
-
-//     const view =
-//         document.getElementById(
-//             "view-friend-round-start"
-//         );
-
-
-//     if (
-//         view &&
-//         view.classList.contains("active")
-//     ) {
-
-//         return;
-
-//     }
-
-
-//     if (countdownInterval) {
-
-//         clearInterval(
-//             countdownInterval
-//         );
-
-//         countdownInterval = null;
-
-//     }
-
-
-//     navigateTo(
-//         "view-friend-round-start"
-//     );
-
-
-//     const topicDisplay =
-//         document.getElementById(
-//             "friend-topic-display"
-//         );
-
-
-//     if (topicDisplay) {
-
-//         topicDisplay.textContent =
-//             topic;
-
-//     }
-
-
-//     let count = 3;
-
-
-//     const timer =
-//         document.getElementById(
-//             "friend-countdown-timer"
-//         );
-
-
-//     timer.textContent =
-//         count;
-
-
-//     countdownInterval =
-//         setInterval(
-//             async () => {
-
-//                 count--;
-
-
-//                 if (count > 0) {
-
-//                     timer.textContent =
-//                         count;
-
-//                     return;
-
-//                 }
-
-
-//                 clearInterval(
-//                     countdownInterval
-//                 );
-
-//                 countdownInterval =
-//                     null;
-
-
-//                 if (isHost) {
-
-//                     try {
-
-//                         await updateDoc(
-//                             doc(
-//                                 db,
-//                                 "rooms",
-//                                 currentRoomId
-//                             ),
-//                             {
-
-//                                 status:
-//                                     "playing"
-
-//                             }
-//                         );
-
-//                     } catch (error) {
-
-//                         console.error(
-//                             "プレイ開始エラー:",
-//                             error
-//                         );
-
-//                     }
-
-//                 }
-
-//             },
-//             1000
-//         );
-
-// }
-
-
-// /* =====================================================
-//    フレンド回答画面
-//    ===================================================== */
-
-// function goToFriendInputView(topic) {
-
-//     navigateTo(
-//         "view-friend-input"
-//     );
-
-
-//     document.getElementById(
-//         "friend-topic-display-input-view"
-//     ).textContent =
-//         topic;
-
-
-//     document.getElementById(
-//         "friend-kake-text"
-//     ).textContent =
-//         `「${topic}」とかけて、`;
-
-
-//     document.getElementById(
-//         "friend-totoku-input"
-//     ).value = "";
-
-
-//     document.getElementById(
-//         "friend-kokoro-input"
-//     ).value = "";
-
-
-//     document.getElementById(
-//         "friend-input-area"
-//     ).style.display =
-//         "block";
-
-
-//     document.getElementById(
-//         "friend-submit-waiting"
-//     ).style.display =
-//         "none";
-
-
-//     hasSubmitted = false;
-//     resultShown = false;
-
-
-//     startFriendTimer();
-
-// }
-
-
-// /* =====================================================
-//    60秒タイマー
-//    ===================================================== */
-
-// function startFriendTimer() {
-
-//     if (friendTimerInterval) {
-
-//         clearInterval(
-//             friendTimerInterval
-//         );
-
-//     }
-
-
-//     let timeLeft = 60;
-
-
-//     const display =
-//         document.getElementById(
-//             "friend-input-timer"
-//         );
-
-
-//     display.textContent =
-//         `残り ${timeLeft}秒`;
-
-
-//     friendTimerInterval =
-//         setInterval(
-//             () => {
-
-//                 timeLeft--;
-
-
-//                 display.textContent =
-//                     `残り ${Math.max(
-//                         timeLeft,
-//                         0
-//                     )}秒`;
-
-
-//                 if (
-//                     timeLeft <= 0
-//                 ) {
-
-//                     clearInterval(
-//                         friendTimerInterval
-//                     );
-
-//                     friendTimerInterval =
-//                         null;
-
-
-//                     if (!hasSubmitted) {
-
-//                         submitFriendAnswer();
-
-//                     }
-
-//                 }
-
-//             },
-//             1000
-//         );
-
-// }
-
-
-// /* =====================================================
-//    フレンド回答提出
-//    ===================================================== */
-
-// window.submitFriendAnswer =
-// async function() {
-
-//     if (hasSubmitted) {
-
-//         return;
-
-//     }
-
-
-//     if (
-//         !currentRoomId ||
-//         !currentUserId
-//     ) {
-
-//         return;
-
-//     }
-
-
-//     hasSubmitted = true;
-
-
-//     if (friendTimerInterval) {
-
-//         clearInterval(
-//             friendTimerInterval
-//         );
-
-//         friendTimerInterval = null;
-
-//     }
-
-
-//     const totoku =
-//         document.getElementById(
-//             "friend-totoku-input"
-//         ).value.trim() ||
-//         "（無回答）";
-
-
-//     const kokoro =
-//         document.getElementById(
-//             "friend-kokoro-input"
-//         ).value.trim() ||
-//         "（無回答）";
-
-
-//     const score =
-//         calculateScore(
-//             totoku,
-//             kokoro
-//         );
-
-
-//     try {
-
-//         await setDoc(
-//             doc(
-//                 db,
-//                 "rooms",
-//                 currentRoomId,
-//                 "answers",
-//                 currentUserId
-//             ),
-//             {
-
-//                 uid:
-//                     currentUserId,
-
-//                 name:
-//                     username,
-
-//                 topic:
-//                     currentTopic,
-
-//                 totoku:
-//                     totoku,
-
-//                 kokoro:
-//                     kokoro,
-
-//                 score:
-//                     score,
-
-//                 submittedAt:
-//                     serverTimestamp()
-
-//             }
-//         );
-
-
-//         await updateDoc(
-//             doc(
-//                 db,
-//                 "rooms",
-//                 currentRoomId,
-//                 "participants",
-//                 currentUserId
-//             ),
-//             {
-
-//                 submitted:
-//                     true
-
-//             }
-//         );
-
-
-//         document.getElementById(
-//             "friend-input-area"
-//         ).style.display =
-//             "none";
-
-
-//         document.getElementById(
-//             "friend-submit-waiting"
-//         ).style.display =
-//             "block";
-
-
-//     } catch (error) {
-
-//         console.error(
-//             "回答送信エラー:",
-//             error
-//         );
-
-
-//         hasSubmitted = false;
-
-
-//         alert(
-//             "回答を送信できませんでした。\n\n" +
-//             error.message
-//         );
-
-//     }
-
-// };
-
-
-// /* =====================================================
-//    提出状況
-//    ===================================================== */
-
-// function updateAnswerWaitingStatus(
-//     snapshot
-// ) {
-
-//     const status =
-//         document.getElementById(
-//             "friend-waiting-status"
-//         );
-
-
-//     if (!status) {
-
-//         return;
-
-//     }
-
-
-//     status.textContent =
-//         `${snapshot.size}人が回答済み。` +
-//         " 他のプレイヤーを待っています...";
-
-// }
-
-
-// /* =====================================================
-//    全員回答済みか確認
-//    ===================================================== */
-
-// async function checkEveryoneSubmitted(
-//     participants
-// ) {
-
-//     if (
-//         !currentRoomId ||
-//         participants.length === 0
-//     ) {
-
-//         return;
-
-//     }
-
-
-//     if (
-//         !participants.every(
-//             player =>
-//                 player.submitted === true
-//         )
-//     ) {
-
-//         return;
-
-//     }
-
-
-//     if (!isHost) {
-
-//         return;
-
-//     }
-
-
-//     try {
-
-//         const roomSnapshot =
-//             await getDoc(
-//                 doc(
-//                     db,
-//                     "rooms",
-//                     currentRoomId
-//                 )
-//             );
-
-
-//         if (!roomSnapshot.exists()) {
-
-//             return;
-
-//         }
-
-
-//         const room =
-//             roomSnapshot.data();
-
-
-//         if (
-//             room.status !==
-//             "playing"
-//         ) {
-
-//             return;
-
-//         }
-
-
-//         await updateDoc(
-//             doc(
-//                 db,
-//                 "rooms",
-//                 currentRoomId
-//             ),
-//             {
-
-//                 status:
-//                     "result"
-
-//             }
-//         );
-
-
-//     } catch (error) {
-
-//         console.error(
-//             "結果移行エラー:",
-//             error
-//         );
-
-//     }
-
-// }
-
-
-// /* =====================================================
-//    結果画面
-//    ===================================================== */
-
-// function showFriendResult() {
-
-//     if (resultShown) {
-
-//         navigateTo(
-//             "view-friend-result"
-//         );
-
-//         return;
-
-//     }
-
-
-//     resultShown = true;
-
-
-//     navigateTo(
-//         "view-friend-result"
-//     );
-
-
-//     document.getElementById(
-//         "friend-result-topic"
-//     ).textContent =
-//         currentTopic;
-
-
-//     loadFriendResults();
-
-// }
-
-
-// /* =====================================================
-//    結果取得
-//    ===================================================== */
-
-// async function loadFriendResults() {
-
-//     if (!currentRoomId) {
-
-//         return;
-
-//     }
-
-
-//     try {
-
-//         const answersRef =
-//             collection(
-//                 db,
-//                 "rooms",
-//                 currentRoomId,
-//                 "answers"
-//             );
-
-
-//         const snapshot =
-//             await getDocs(
-//                 answersRef
-//             );
-
-
-//         renderFriendResults(
-//             snapshot
-//         );
-
-
-//     } catch (error) {
-
-//         console.error(
-//             "結果取得エラー:",
-//             error
-//         );
-
-//     }
-
-// }
-
-
-// /* =====================================================
-//    結果表示
-//    ===================================================== */
-
-// function renderFriendResults(
-//     snapshot
-// ) {
-
-//     const container =
-//         document.getElementById(
-//             "friend-answer-list"
-//         );
-
-
-//     if (!container) {
-
-//         return;
-
-//     }
-
-
-//     container.innerHTML = "";
-
-
-//     const answers =
-//         snapshot.docs.map(
-//             item => ({
-//                 id:
-//                     item.id,
-//                 ...item.data()
-//             })
-//         );
-
-
-//     answers.sort(
-//         (a, b) =>
-//             (b.score || 0) -
-//             (a.score || 0)
-//     );
-
-
-//     answers.forEach(
-//         answer => {
-
-//             const card =
-//                 document.createElement(
-//                     "div"
-//                 );
-
-//             card.className =
-//                 "friend-answer-card";
-
-
-//             if (
-//                 answer.uid ===
-//                 currentUserId
-//             ) {
-
-//                 card.classList.add(
-//                     "my-answer-card"
-//                 );
-
-//             }
-
-
-//             const header =
-//                 document.createElement(
-//                     "div"
-//                 );
-
-//             header.className =
-//                 "answer-card-header";
-
-
-//             const name =
-//                 document.createElement(
-//                     "span"
-//                 );
-
-//             name.className =
-//                 "answer-player-name";
-
-//             name.textContent =
-//                 answer.name +
-//                 (
-//                     answer.uid ===
-//                     currentUserId
-//                         ? " (あなた)"
-//                         : ""
-//                 );
-
-
-//             const score =
-//                 document.createElement(
-//                     "span"
-//                 );
-
-//             score.className =
-//                 "answer-score";
-
-//             score.textContent =
-//                 `${answer.score || 0}点`;
-
-
-//             const line1 =
-//                 document.createElement(
-//                     "p"
-//                 );
-
-//             line1.className =
-//                 "answer-text";
-
-//             line1.textContent =
-//                 `「${answer.topic}」とかけて、`;
-
-
-//             const line2 =
-//                 document.createElement(
-//                     "p"
-//                 );
-
-//             line2.className =
-//                 "answer-text";
-
-//             line2.textContent =
-//                 `「${answer.totoku}」ととく。`;
-
-
-//             const line3 =
-//                 document.createElement(
-//                     "p"
-//                 );
-
-//             line3.className =
-//                 "answer-text";
-
-//             line3.textContent =
-//                 `その心は、「${answer.kokoro}」`;
-
-
-//             header.appendChild(
-//                 name
-//             );
-
-//             header.appendChild(
-//                 score
-//             );
-
-
-//             card.appendChild(
-//                 header
-//             );
-
-//             card.appendChild(
-//                 line1
-//             );
-
-//             card.appendChild(
-//                 line2
-//             );
-
-//             card.appendChild(
-//                 line3
-//             );
-
-
-//             container.appendChild(
-//                 card
-//             );
-
-//         }
-//     );
-
-// }
-
-
-// /* =====================================================
-//    もう一度遊ぶ
-//    ===================================================== */
-
-// window.startFriendAgain =
-// async function() {
-
-//     if (!isHost) {
-
-//         alert(
-//             "もう一度遊ぶを開始できるのはホストです。"
-//         );
-
-//         return;
-
-//     }
-
-
-//     if (!currentRoomId) {
-
-//         return;
-
-//     }
-
-
-//     try {
-
-//         const participants =
-//             await getParticipants(
-//                 currentRoomId
-//             );
-
-
-//         for (
-//             const player
-//             of participants
-//         ) {
-
-//             await deleteDoc(
-//                 doc(
-//                     db,
-//                     "rooms",
-//                     currentRoomId,
-//                     "answers",
-//                     player.uid
-//                 )
-//             );
-
-
-//             await updateDoc(
-//                 doc(
-//                     db,
-//                     "rooms",
-//                     currentRoomId,
-//                     "participants",
-//                     player.uid
-//                 ),
-//                 {
-
-//                     submitted:
-//                         false
-
-//                 }
-//             );
-
-//         }
-
-
-//         currentTopic =
-//             getRandomTopic();
-
-
-//         await updateDoc(
-//             doc(
-//                 db,
-//                 "rooms",
-//                 currentRoomId
-//             ),
-//             {
-
-//                 topic:
-//                     currentTopic,
-
-//                 status:
-//                     "countdown",
-
-//                 roundStartedAt:
-//                     serverTimestamp()
-
-//             }
-//         );
-
-
-//         hasSubmitted = false;
-//         resultShown = false;
-
-
-//     } catch (error) {
-
-//         console.error(
-//             "再スタートエラー:",
-//             error
-//         );
-
-
-//         alert(
-//             "再スタートできませんでした。\n\n" +
-//             error.message
-//         );
-
-//     }
-
-// };
-
-
-// /* =====================================================
-//    部屋退出
-//    ===================================================== */
-
-// window.leaveRoom =
-// async function() {
-
-//     const roomId =
-//         currentRoomId;
-
-//     const userId =
-//         currentUserId;
-
-
-//     removeRoomListeners();
-
-
-//     if (roomId && userId) {
-
-//         try {
-
-//             await deleteDoc(
-//                 doc(
-//                     db,
-//                     "rooms",
-//                     roomId,
-//                     "participants",
-//                     userId
-//                 )
-//             );
-
-//         } catch (error) {
-
-//             console.error(
-//                 "退出処理エラー:",
-//                 error
-//             );
-
-//         }
-
-//     }
-
-
-//     currentRoomId = null;
-//     isHost = false;
-//     hasSubmitted = false;
-//     resultShown = false;
-
-
-//     if (friendTimerInterval) {
-
-//         clearInterval(
-//             friendTimerInterval
-//         );
-
-//         friendTimerInterval = null;
-
-//     }
-
-
-//     if (countdownInterval) {
-
-//         clearInterval(
-//             countdownInterval
-//         );
-
-//         countdownInterval = null;
-
-//     }
-
-
-//     navigateTo(
-//         "view-main"
-//     );
-
-// };
-
-
-// /* =====================================================
-//    起動
-//    ===================================================== */
-
-// document.addEventListener(
-//     "DOMContentLoaded",
-//     () => {
-
-//         updateUsernameDisplay();
-
-//     }
-// );
+updateCurrentTime();
