@@ -245,515 +245,331 @@
 </section>
 
 
-<!-- ==================================================
-     フレンド
-================================================== -->
+<!-- ==============================
+     フレンドメニュー
+     ============================== -->
 
-<section id="friend" class="screen">
+<div id="view-friend-menu"
+     class="app-container">
 
-<div class="phone">
+    <div class="player-list-item no-border">
 
-    <div class="status">
-        <span class="current-time">9:41</span>
-        　　　　　　　　　●● ▪
-    </div>
-
-    <button
-        class="small-back"
-        onclick="show('home')">
-        もどる
-    </button>
-
-    <div class="friend-main">
-
-        <button
-            class="btn-round friend-main-btn"
-            onclick="show('createRoom')">
-            部屋を作る
-        </button>
-
-        <button
-            class="btn-round friend-main-btn"
-            onclick="show('joinRoom')">
-            部屋を探す
-        </button>
-
-        <button
-            class="btn friend-add"
-            onclick="showToast('フレンド追加機能は準備中です')">
-            フレンド追加
-        </button>
-
-    </div>
-
-</div>
-
-</section>
-
-
-<!-- ==================================================
-     部屋作成
-================================================== -->
-
-<section id="createRoom" class="screen">
-
-<div class="phone">
-
-    <div class="status">
-        <span class="current-time">9:41</span>
-        　　　　　　　　　●● ▪
-    </div>
-
-    <button
-        class="small-back"
-        onclick="show('friend')">
-        もどる
-    </button>
-
-    <div class="room-form">
-
-        <div class="room-row">
-
-            <label>部屋名</label>
-
-            <input
-                id="roomName"
-                class="input">
-
-        </div>
-
-        <div class="room-row">
-
-            <label>パスワード</label>
-
-            <input
-                id="roomPassword"
-                class="input"
-                type="password">
-
-        </div>
-
-        <div class="room-row">
-
-            <label>回答時間</label>
-
-            <select id="roomTime">
-
-                <option value="30">30秒</option>
-
-                <option value="60">60秒</option>
-
-                <option value="90" selected>
-                    90秒
-                </option>
-
-            </select>
-
-        </div>
-
-        <div class="room-row">
-
-            <label>ラウンド数</label>
-
-            <select id="roomRounds">
-
-                <option value="1">1</option>
-
-                <option value="3" selected>
-                    3
-                </option>
-
-                <option value="5">5</option>
-
-            </select>
-
-        </div>
-
-    </div>
-
-    <button
-        class="btn room-create"
-        onclick="createRoom()">
-        作成
-    </button>
-
-</div>
-
-</section>
-
-
-<!-- ==================================================
-     ロビー
-================================================== -->
-
-<section id="lobby" class="screen">
-
-<div class="phone">
-
-    <div class="status">
-        <span class="current-time">9:41</span>
-        　　　　　　　　　●● ▪
-    </div>
-
-    <button
-        class="small-back"
-        onclick="show('friend')">
-        もどる
-    </button>
-
-    <div class="lobby-main">
-
-        <div
-            id="lobbyName"
-            class="box lobby-name">
-            部屋名
-        </div>
-
-        <div class="players-grid">
-
-            <div class="player-slot">
-
-                <div class="icon-circle">
-                    アイコン
-                </div>
-
-                <span
-                    id="lobbyP1"
-                    class="player-name">
-                    プレイヤー名
-                </span>
-
-            </div>
-
-            <div class="player-slot">
-
-                <div class="icon-circle">
-                    アイコン
-                </div>
-
-                <span class="player-name">
-                    プレイヤー
-                </span>
-
-            </div>
-
-            <div class="player-slot">
-
-                <div class="icon-circle">
-                    アイコン
-                </div>
-
-                <span class="player-name">
-                    プレイヤー
-                </span>
-
-            </div>
-
-            <div class="player-slot">
-
-                <div class="icon-circle">
-                    アイコン
-                </div>
-
-                <span class="player-name">
-                    プレイヤー
-                </span>
-
-            </div>
-
-        </div>
-
-        <button
-            class="btn lobby-start"
-            onclick="startMultiGame()">
-            はじめる
-        </button>
-
-    </div>
-
-</div>
-
-</section>
-
-
-<!-- ==================================================
-     部屋検索
-================================================== -->
-
-<section id="joinRoom" class="screen">
-
-<div class="phone">
-
-    <div class="status">
-        <span class="current-time">9:41</span>
-        　　　　　　　　　●● ▪
-    </div>
-
-    <button
-        class="small-back"
-        onclick="show('friend')">
-        もどる
-    </button>
-
-    <div class="join-main">
-
-        <div class="join-row">
-
-            <label>部屋ID</label>
-
-            <input
-                id="joinId"
-                class="input">
-
-        </div>
-
-        <div class="join-row">
-
-            <label>パスワード</label>
-
-            <input
-                id="joinPassword"
-                class="input"
-                type="password">
-
-        </div>
-
-        <button
-            class="btn join-btn"
-            onclick="joinRoom()">
-            入る
-        </button>
-
-    </div>
-
-</div>
-
-</section>
-
-
-<!-- ==================================================
-     マルチゲーム
-================================================== -->
-
-<section id="multiGame" class="screen">
-
-<div class="phone">
-
-    <div class="status">
-        <span class="current-time">9:41</span>
-        　　　　　　　　　●● ▪
-    </div>
-
-    <div
-        id="friendTime"
-        class="box game-time">
-        90秒
-    </div>
-
-    <div
-        id="friendQuestion"
-        class="box game-question">
-        お題
-    </div>
-
-    <input
-        id="friendAnswer"
-        class="input friend-answer-input"
-        placeholder="入力">
-
-    <button
-        class="btn friend-ok"
-        onclick="submitMulti()">
-        OK
-    </button>
-
-    <div class="answer-status">
-
-        <div class="answer-status-row">
-
-            <div class="icon-small">
-                アイコン
-            </div>
-
-            <b>名前</b>
-
-            <span>回答中</span>
-
-        </div>
-
-        <div class="answer-status-row">
-
-            <div class="icon-small">
-                アイコン
-            </div>
-
-            <div class="answer-status-line"></div>
-
-        </div>
-
-        <div class="answer-status-row">
-
-            <div class="icon-small">
-                アイコン
-            </div>
-
-            <div class="answer-status-line"></div>
-
-        </div>
-
-    </div>
-
-</div>
-
-</section>
-
-
-<!-- ==================================================
-     マルチAI
-================================================== -->
-
-<section id="multiAI" class="screen">
-
-<div class="phone">
-
-    <div class="status">
-        <span class="current-time">9:41</span>
-        　　　　　　　　　●● ▪
-    </div>
-
-    <div class="box ai-box">
-
-        <div>
-            AI採点中
-
-            <div class="loading">
-                参加者の答えを採点しています
-            </div>
-        </div>
-
-    </div>
-
-</div>
-
-</section>
-
-
-<!-- ==================================================
-     マルチ結果
-================================================== -->
-
-<section id="multiResult" class="screen">
-
-<div class="phone">
-
-    <div class="status">
-        <span class="current-time">9:41</span>
-        　　　　　　　　　●● ▪
-    </div>
-
-    <div class="box friend-result-head">
-        結果発表
-    </div>
-
-    <div class="friend-result-player">
-
-        <div class="icon-small">
-            アイコン
-        </div>
-
-        <span id="resultPlayer">
-            プレイヤー名
-        </span>
-
-        <span class="friend-result-score">
-
-            合計
-
-            <b id="friendTotal">
-                0
-            </b>
-
-            点
-
-        </span>
-
-    </div>
-
-    <div class="friend-result-line"></div>
-
-    <div
-        id="friendResultList"
-        class="friend-result-list">
-    </div>
-
-    <div class="multi-result-buttons">
-
-        <button
-            class="btn"
-            onclick="show('multiEnd')">
+        <button class="btn-circle back-circle"
+                type="button"
+                onclick="navigateTo('view-main')">
             もどる
         </button>
 
-        <button
-            class="btn"
-            onclick="startMultiGame()">
-            もう一度
+    </div>
+
+    <div class="friend-menu-content">
+
+        <button class="btn-oval friend-main-button"
+                type="button"
+                onclick="createRoom()">
+            新しく部屋を作る
+        </button>
+
+        <div class="or-text">
+            または
+        </div>
+
+        <div class="room-join-area">
+
+            <input id="room-number-input"
+                   type="text"
+                   class="input-field room-input"
+                   maxlength="6"
+                   inputmode="numeric"
+                   placeholder="6桁の部屋番号を入力">
+
+            <button class="btn-oval friend-main-button"
+                    type="button"
+                    onclick="joinRoom()">
+                部屋に入る
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ==============================
+     待合室
+     ============================== -->
+
+<div id="view-waiting-room"
+     class="app-container">
+
+    <div class="player-list-item no-border">
+
+        <button class="btn-circle back-circle"
+                type="button"
+                onclick="leaveRoom()">
+            退出
+        </button>
+
+    </div>
+
+    <div class="room-number-area">
+
+        <div class="room-number-label">
+            ROOM NUMBER
+        </div>
+
+        <div id="waiting-room-number"
+             class="room-number">
+            ------
+        </div>
+
+        <button class="copy-room-button"
+                type="button"
+                onclick="copyRoomNumber()">
+            部屋番号をコピー
+        </button>
+
+    </div>
+
+    <div id="waiting-topic"
+         class="card-display topic-card">
+        お題：待機中
+    </div>
+
+    <div id="participant-title"
+         class="participant-title">
+        参加中のプレイヤー
+    </div>
+
+    <div id="participant-list"
+         class="participant-list">
+    </div>
+
+    <div class="waiting-start-area">
+
+        <button id="start-friend-button"
+                class="btn-oval friend-start-button"
+                type="button"
+                onclick="startFriendMatch()">
+            ゲームスタート
         </button>
 
     </div>
 
 </div>
 
-</section>
 
+<!-- ==============================
+     カウントダウン
+     ============================== -->
 
-<!-- ==================================================
-     マルチ終了
-================================================== -->
+<div id="view-friend-round-start"
+     class="app-container">
 
-<section id="multiEnd" class="screen">
+    <div class="round-start-content">
 
-<div class="phone">
+        <div class="round-start-label">
+            まもなくスタート！
+        </div>
 
-    <div class="status">
-        <span class="current-time">9:41</span>
-        　　　　　　　　　●● ▪
+        <div id="friend-countdown-timer"
+             class="countdown-number">
+            3
+        </div>
+
+        <div class="topic-small-label">
+            今ラウンドのお題
+        </div>
+
+        <div id="friend-topic-display"
+             class="card-display topic-card">
+        </div>
+
     </div>
 
-    <div class="box end-title">
-        ゲーム終了
-    </div>
+</div>
 
-    <div class="end-text">
-        マルチゲームを終了しました。<br>
-        対戦ありがとうございました。
-    </div>
 
-    <div class="multi-end-buttons">
+<!-- ==============================
+     フレンド入力
+     ============================== -->
 
-        <button
-            class="btn"
-            onclick="show('home')">
-            ホームへ戻る
+<div id="view-friend-input"
+     class="app-container">
+
+    <div class="player-list-item no-border room-header">
+
+        <div>
+
+            <span class="room-header-label">
+                ROOM NUMBER
+            </span>
+
+            <span id="input-room-number"
+                  class="room-header-number">
+                ------
+            </span>
+
+        </div>
+
+        <button class="btn-circle exit-button"
+                type="button"
+                onclick="leaveRoom()">
+            退出
         </button>
 
-        <button
-            class="btn"
-            onclick="show('friend')">
-            フレンド画面へ
-        </button>
+    </div>
 
-        <button
-            class="btn"
-            onclick="startMultiGame()">
+    <div id="input-participant-title"
+         class="participant-title">
+        参加中のプレイヤー
+    </div>
+
+    <div id="input-participant-list"
+         class="participant-list">
+    </div>
+
+    <div class="friend-game-header">
+
+        <div class="friend-game-title">
+            フレンド対戦中
+        </div>
+
+        <div id="friend-input-timer"
+             class="friend-timer">
+            残り 60秒
+        </div>
+
+    </div>
+
+    <div id="friend-topic-display-input-view"
+         class="card-display friend-topic-card">
+    </div>
+
+    <div id="friend-input-area"
+         class="friend-answer-area">
+
+        <div class="nazokake-question">
+
+            <div id="friend-kake-text"
+                 class="kake-text">
+                「お題」とかけて、
+            </div>
+
+            <div class="kake-input-wrapper">
+
+                <span class="bracket">「</span>
+
+                <input id="friend-totoku-input"
+                       type="text"
+                       class="input-field nazokake-input"
+                       maxlength="30"
+                       placeholder="ととく内容を入力">
+
+                <span class="bracket">」</span>
+
+            </div>
+
+            <div class="totoku-text">
+                ととく。
+            </div>
+
+            <div class="kokoro-title">
+                その心は？
+            </div>
+
+            <input id="friend-kokoro-input"
+                   type="text"
+                   class="input-field nazokake-input"
+                   maxlength="50"
+                   placeholder="その心は？">
+
+        </div>
+
+        <div class="submit-button-area">
+
+            <button id="btn-friend-submit"
+                    class="btn-circle"
+                    type="button"
+                    onclick="submitFriendAnswer()">
+                提出
+            </button>
+
+        </div>
+
+    </div>
+
+    <div id="friend-submit-waiting"
+         class="friend-submit-waiting">
+
+        <div class="card-display waiting-card">
+
+            あなたのなぞかけを送信しました！
+
+            <span id="friend-waiting-status">
+                他のプレイヤーの回答を待っています...
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ==============================
+     フレンド結果
+     ============================== -->
+
+<div id="view-friend-result"
+     class="app-container">
+
+    <div class="friend-result-header">
+
+        <span class="result-label">
+            結果発表
+        </span>
+
+        <div class="friend-result-subtitle">
+            みんなのなぞかけとAI採点
+        </div>
+
+    </div>
+
+    <div class="friend-result-topic-area">
+
+        <div class="result-section-title">
+            お題
+        </div>
+
+        <p id="friend-result-topic"
+           class="result-topic">
+        </p>
+
+    </div>
+
+    <div id="friend-answer-list"
+         class="friend-answer-list">
+    </div>
+
+    <div class="friend-result-button-area">
+
+        <button class="btn-oval friend-replay-button"
+                type="button"
+                onclick="startFriendAgain()">
             もう一度遊ぶ
         </button>
 
+        <button class="btn-rect friend-home-button"
+                type="button"
+                onclick="leaveRoom()">
+            トップに戻る
+        </button>
+
     </div>
 
 </div>
-
-</section>
 
 
 <!-- ==================================================
@@ -1009,7 +825,8 @@
 
 <div id="toast" class="toast"></div>
 
-<script src="script.js"></script>
+<script type="module" src="script.js"></script>
+
 
 </body>
 </html>
