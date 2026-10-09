@@ -3104,52 +3104,7 @@ document.addEventListener(
         applySettingsOnStartup();
     }
 );
-/* =====================================================
-   Firebase
-   ===================================================== */
 
-import {
-    initializeApp
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-
-import {
-    getAuth,
-    signInAnonymously,
-    onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-
-import {
-    getFirestore,
-    collection,
-    doc,
-    setDoc,
-    getDoc,
-    getDocs,
-    updateDoc,
-    deleteDoc,
-    onSnapshot,
-    serverTimestamp
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-
-
-/* =====================================================
-   Firebase設定
-   ===================================================== */
-
-const firebaseConfig = {
-    apiKey: "AIzaSyB1bqlXwpkWfrrZUxy898nxtgQ3DwV16_k",
-    authDomain: "nazokake-51a39.firebaseapp.com",
-    projectId: "nazokake-51a39",
-    storageBucket: "nazokake-51a39.firebasestorage.app",
-    messagingSenderId: "619204752710",
-    appId: "1:619204752710:web:cca3f618562703edfd2147",
-    measurementId: "G-PDDMGMHJBD"
-};
-
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
 
 /* =====================================================
    Firebase匿名ログイン
